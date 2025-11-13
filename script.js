@@ -1,4 +1,4 @@
-// МотоДиагностика PRO - Основная логика приложения
+// МотоДиагностика PRO - Основная логика приложения с поддержкой 100 фото
 
 const app = {
     modules: {},
@@ -1109,4 +1109,1173 @@ const app = {
         const form = document.getElementById('diagnosticForm');
         if (form) form.reset();
         
-        localStorage.removeItem
+        localStorage.removeItem('motodiag_form_data');
+        
+        const outputCard = document.getElementById('outputCard');
+        const savingsAlert = document.getElementById('savingsAlert');
+        const inspectionFields = document.getElementById('inspectionFields');
+        const brandCustom = document.getElementById('brand_custom');
+        const modelCustom = document.getElementById('model_custom');
+        const auctionLotGroup = document.getElementById('auctionLotNumberGroup');
+        
+        if (outputCard) outputCard.classList.add('hidden');
+        if (savingsAlert) savingsAlert.classList.add('hidden');
+        if (inspectionFields) inspectionFields.classList.add('hidden');
+        if (brandCustom) brandCustom.classList.add('hidden');
+        if (modelCustom) modelCustom.classList.add('hidden');
+        if (auctionLotGroup) auctionLotGroup.classList.add('hidden');
+        
+        // Сбрасываем список моделей
+        const brandSelect = document.getElementById('brand');
+        if (brandSelect) {
+            brandSelect.value = '';
+            brandSelect.dispatchEvent(new Event('change'));
+        }
+        
+        this.updateProgress();
+        this.showToast('Форма очищена', 'success');
+    },
+    
+    copyToClipboard() {
+        try {
+            const text = document.getElementById('output')?.textContent || '';
+            if (!text) {
+                this.showToast('Нет текста для копирования', 'warning');
+                return;
+            }
+            
+            navigator.clipboard.writeText(text).then(() => {
+                this.showToast('Отчет скопирован в буфер обмена для соцсетей!', 'success');
+            }).catch(() => {
+                // Fallback для старых браузеров
+                const textarea = document.createElement('textarea');
+                textarea.value = text;
+                document.body.appendChild(textarea);
+                textarea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textarea);
+                this.showToast('Отчет скопирован в буфер обмена для соцсетей!', 'success');
+            });
+        } catch (e) {
+            console.error('Ошибка копирования:', e);
+            this.showToast('Ошибка при копировании', 'warning');
+        }
+    },
+    
+    copyModalReport() {
+        try {
+            const text = document.getElementById('modalOutput')?.textContent || '';
+            if (!text) {
+                this.showToast('Нет текста для копирования', 'warning');
+                return;
+            }
+            
+            navigator.clipboard.writeText(text).then(() => {
+                this.showToast('Отчет скопирован в буфер обмена для соцсетей!', 'success');
+            }).catch(() => {
+                const textarea = document.createElement('textarea');
+                textarea.value = text;
+                document.body.appendChild(textarea);
+                textarea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textarea);
+                this.showToast('Отчет скопирован в буфер обмена для соцсетей!', 'success');
+            });
+        } catch (e) {
+            console.error('Ошибка копирования:', e);
+            this.showToast('Ошибка при копировании', 'warning');
+        }
+    },
+    
+    showToast(message, type = 'info') {
+        const container = document.getElementById('toastContainer');
+        if (!container) return;
+        
+        const toast = document.createElement('div');
+        toast.className = `toast toast-${type}`;
+        toast.setAttribute('role', 'status');
+        toast.textContent = message;
+        
+        container.appendChild(toast);
+        
+        // Аудио/вибро по настройкам
+        const vibrationEl = document.getElementById('vibration');
+        const soundEl = document.getElementById('soundNotifications');
+        
+        if (vibrationEl && vibrationEl.checked && navigator.vibrate) {
+            navigator.vibrate(80);
+        }
+        
+        requestAnimationFrame(() => toast.classList.add('show'));
+        
+        setTimeout(() => {
+            toast.classList.remove('show');
+            setTimeout(() => toast.remove(), 300);
+        }, 4000);
+    },
+    
+    showError(message) {
+        this.showToast(message, 'warning');
+    },
+    
+    escapeHtml(str) {
+        return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+    },
+    
+    // Методы для работы с базой данных
+    loadReportsList() {
+        const reportsList = document.getElementById('reportsList');
+        if (!reportsList) return;
+        
+        const searchValue = (document.getElementById('searchReports')?.value || '').toLowerCase();
+        
+        if (this.state.reportsDatabase.length === 0) {
+            reportsList.innerHTML = '<div class="text-center" style="padding: 20px; color: var(--text-light);">Нет сохраненных отчетов</div>';
+            return;
+        }
+        
+        const filtered = this.state.reportsDatabase.filter(report => {
+            if (!searchValue) return true;
+            
+            return (
+                report.brand?.toLowerCase().includes(searchValue) ||
+                report.model?.toLowerCase().includes(searchValue) ||
+                (report.year && String(report.year).includes(searchValue)) ||
+                report.vin?.toLowerCase().includes(searchValue) ||
+                report.engine_number?.toLowerCase().includes(searchValue) ||
+                report.license_plate?.toLowerCase().includes(searchValue)
+            );
+        }).reverse();
+        
+        if (filtered.length === 0) {
+            reportsList.innerHTML = '<div class="text-center" style="padding: 20px; color: var(--text-light);">Отчеты не найдены</div>';
+            return;
+        }
+        
+        reportsList.innerHTML = filtered.map(report => `
+            <div class="report-item">
+                <div class="report-header">
+                    <div class="report-title">${this.escapeHtml(report.brand)} ${this.escapeHtml(report.model)} (${this.escapeHtml(report.year)})</div>
+                    <div class="report-actions">
+                        <button class="action-btn" style="background: var(--secondary-color); color: white;" onclick="app.viewReport('${report.id}')" aria-label="Просмотреть отчет">👁️</button>
+                        <button class="action-btn" style="background: var(--warning-color); color: white;" onclick="app.editReport('${report.id}')" aria-label="Редактировать отчет">✏️</button>
+                        <button class="action-btn" style="background: var(--danger-color); color: white;" onclick="app.deleteReport('${report.id}')" aria-label="Удалить отчет">🗑️</button>
+                    </div>
+                </div>
+                <div class="report-meta">
+                    <div>Пробег: ${this.escapeHtml(report.mileage_km || report.mileage_miles || '0')} ${report.mileage_km ? 'тыс.км' : report.mileage_miles ? 'тыс.миль' : ''}</div>
+                    <div>Цена: ${this.escapeHtml(report.price || 'Не указана')}</div>
+                    <div>${report.vin ? `VIN: ${this.escapeHtml(report.vin)}` : 'VIN: Не указан'}</div>
+                    <div>${report.engine_number ? `Двигатель: ${this.escapeHtml(report.engine_number)}` : 'Двигатель: Не указан'}</div>
+                    <div>${report.license_plate ? `Номер: ${this.escapeHtml(report.license_plate)}` : 'Номер: Не указан'}</div>
+                    <div>Класс: ${this.escapeHtml(report.motorcycle_class || 'Не указан')}</div>
+                    <div>Решение: ${this.escapeHtml(report.decision || 'Не указано')}</div>
+                </div>
+            </div>
+        `).join('');
+    },
+    
+    viewReport(reportId) {
+        const report = this.state.reportsDatabase.find(r => r.id === reportId);
+        if (!report) return;
+        
+        const modalVin = document.getElementById('modalVin');
+        const modalEngineNumber = document.getElementById('modalEngineNumber');
+        const modalLicensePlate = document.getElementById('modalLicensePlate');
+        const modalBikeInfo = document.getElementById('modalBikeInfo');
+        const modalOutput = document.getElementById('modalOutput');
+        const reportModal = document.getElementById('reportModal');
+        
+        if (modalVin) modalVin.textContent = report.vin ? this.escapeHtml(report.vin) : 'Не указан';
+        if (modalEngineNumber) modalEngineNumber.textContent = report.engine_number ? this.escapeHtml(report.engine_number) : 'Не указан';
+        if (modalLicensePlate) modalLicensePlate.textContent = report.license_plate ? this.escapeHtml(report.license_plate) : 'Не указан';
+        if (modalBikeInfo) modalBikeInfo.textContent = `${this.escapeHtml(report.brand)} ${this.escapeHtml(report.model)} (${this.escapeHtml(report.year)})`;
+        if (modalOutput) modalOutput.textContent = report.generated_text || '';
+        if (reportModal) reportModal.classList.remove('hidden');
+    },
+    
+    editReport(reportId) {
+        const report = this.state.reportsDatabase.find(r => r.id === reportId);
+        if (!report) return;
+        
+        // Заполняем форму данными отчета
+        Object.keys(report).forEach(key => {
+            const el = document.getElementById(key);
+            if (el && report[key] !== undefined && report[key] !== null) {
+                el.value = report[key];
+            }
+        });
+        
+        // Обновляем список моделей
+        const brandSelect = document.getElementById('brand');
+        if (brandSelect && report.brand) {
+            brandSelect.value = report.brand;
+            brandSelect.dispatchEvent(new Event('change'));
+            
+            // Устанавливаем модель после обновления списка
+            setTimeout(() => {
+                const modelSelect = document.getElementById('model');
+                if (modelSelect && report.model) {
+                    modelSelect.value = report.model;
+                    modelSelect.dispatchEvent(new Event('change'));
+                }
+            }, 0);
+        }
+        
+        // Показываем/скрываем дополнительные поля
+        const brandCustom = document.getElementById('brand_custom');
+        const modelCustom = document.getElementById('model_custom');
+        const inspectionFields = document.getElementById('inspectionFields');
+        const auctionLotGroup = document.getElementById('auctionLotNumberGroup');
+        
+        if (brandCustom) brandCustom.classList.toggle('hidden', report.brand !== 'Другая марка');
+        if (modelCustom) modelCustom.classList.toggle('hidden', report.model !== 'Другая модель');
+        if (inspectionFields) inspectionFields.classList.toggle('hidden', report.decision !== '📅 Запланировать проверку');
+        if (auctionLotGroup && report.auction_type) {
+            this.toggleAuctionLotField(report.auction_type);
+        }
+        
+        this.updateProgress();
+        
+        // Переключаемся на вкладку отчета
+        const reportTab = document.querySelector('.nav-tab[data-tab="report"]');
+        if (reportTab) reportTab.click();
+        
+        this.showToast(`Редактирование отчета: ${report.brand} ${report.model}`, 'info');
+    },
+    
+    deleteReport(reportId) {
+        if (!confirm('Вы уверены, что хотите удалить этот отчет?')) return;
+        
+        this.state.reportsDatabase = this.state.reportsDatabase.filter(r => r.id !== reportId);
+        localStorage.setItem('motodiag_reports', JSON.stringify(this.state.reportsDatabase));
+        
+        this.loadReportsList();
+        this.updateStatistics();
+        this.showToast('Отчет успешно удален', 'success');
+    },
+    
+    // Методы для работы со статистикой
+    updateStatistics(period = 'week') {
+        const now = new Date();
+        let startDate = new Date(now - 7 * 24 * 60 * 60 * 1000); // неделя по умолчанию
+        
+        if (period === 'month') startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+        if (period === 'quarter') {
+            const q = Math.floor(now.getMonth() / 3);
+            startDate = new Date(now.getFullYear(), q * 3, 1);
+        }
+        if (period === 'year') startDate = new Date(now.getFullYear(), 0, 1);
+        
+        const periodReports = this.state.reportsDatabase.filter(r => new Date(r.timestamp) >= startDate);
+        const totalReports = periodReports.length;
+        const purchased = periodReports.filter(r => r.decision === '✅ Куплен').length;
+        
+        let totalSavings = 0;
+        periodReports.forEach(r => {
+            const price = this.parseMoneyValue(r.price);
+            const objectiveCost = this.parseMoneyValue(r.objective_cost);
+            const sellerDiscount = this.parseMoneyValue(r.seller_discount);
+            const investmentCost = this.parseMoneyValue(r.investment_cost);
+            
+            if (price && objectiveCost) {
+                const savings = (objectiveCost - (price - sellerDiscount)) - investmentCost;
+                if (savings > 0) totalSavings += savings;
+            }
+        });
+        
+        const avgSavings = purchased > 0 ? totalSavings / purchased : 0;
+        
+        const brandCounts = {};
+        periodReports.forEach(r => {
+            if (r.brand) brandCounts[r.brand] = (brandCounts[r.brand] || 0) + 1;
+        });
+        
+        const brandKeys = Object.keys(brandCounts);
+        const popularBrand = brandKeys.length > 0 ? 
+            brandKeys.reduce((a, b) => brandCounts[a] > brandCounts[b] ? a : b) : 
+            'Нет данных';
+        
+        const plannedInspections = this.state.inspectionsDatabase.filter(i => i.status === 'planned').length;
+        const completedInspections = this.state.inspectionsDatabase.filter(i => i.status === 'completed').length;
+        
+        const totalReportsEl = document.getElementById('totalReports');
+        const successfulDealsEl = document.getElementById('successfulDeals');
+        const avgSavingsEl = document.getElementById('avgSavings');
+        const popularBrandEl = document.getElementById('popularBrand');
+        const plannedInspectionsEl = document.getElementById('plannedInspections');
+        const completedInspectionsEl = document.getElementById('completedInspections');
+        
+        if (totalReportsEl) totalReportsEl.textContent = totalReports;
+        if (successfulDealsEl) successfulDealsEl.textContent = purchased;
+        if (avgSavingsEl) avgSavingsEl.textContent = this.formatMoney(Math.round(avgSavings));
+        if (popularBrandEl) popularBrandEl.textContent = popularBrand;
+        if (plannedInspectionsEl) plannedInspectionsEl.textContent = plannedInspections;
+        if (completedInspectionsEl) completedInspectionsEl.textContent = completedInspections;
+    },
+    
+    // Дополнительные методы для проверок (упрощенная версия)
+    loadInspectionsList() {
+        const inspectionsList = document.getElementById('inspectionsList');
+        if (!inspectionsList) return;
+        
+        if (this.state.inspectionsDatabase.length === 0) {
+            inspectionsList.innerHTML = '<div class="text-center" style="padding: 20px; color: var(--text-light);">Нет запланированных проверок</div>';
+            return;
+        }
+        
+        // Простая реализация для демонстрации
+        inspectionsList.innerHTML = this.state.inspectionsDatabase.map(inspection => `
+            <div class="inspection-item">
+                <div class="inspection-header">
+                    <div class="inspection-title">${this.escapeHtml(inspection.brand)} ${this.escapeHtml(inspection.model)}</div>
+                    <div class="inspection-date">${inspection.date || 'Дата не указана'}</div>
+                </div>
+                <div class="inspection-details">
+                    <div><strong>Адрес:</strong> ${this.escapeHtml(inspection.address || 'Не указан')}</div>
+                    <div><strong>Телефон:</strong> ${this.escapeHtml(inspection.phone || 'Не указан')}</div>
+                </div>
+            </div>
+        `).join('');
+    },
+
+    // ===== НОВЫЕ ФУНКЦИИ ДЛЯ ОТЧЕТА КЛИЕНТУ И ЗАГРУЗКИ ФАЙЛОВ =====
+
+    // Инициализация новой вкладки
+    initClientReportTab() {
+        // Инициализация загрузки аукционных листов
+        this.initAuctionFileUpload();
+        
+        // Инициализация загрузки фотографий для отчета
+        this.initPhotoUpload();
+        
+        // Инициализация кнопки генерации PDF
+        const generatePdfBtn = document.getElementById('generatePdfBtn');
+        if (generatePdfBtn) {
+            generatePdfBtn.addEventListener('click', () => this.generateClientPDF());
+        }
+    },
+
+    // Инициализация загрузки файлов аукционных листов
+    initAuctionFileUpload() {
+        const auctionFileInput = document.getElementById('auction_lot_file');
+        const auctionPreview = document.getElementById('auctionLotPreview');
+        
+        if (auctionFileInput && auctionPreview) {
+            auctionFileInput.addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                if (file) {
+                    // Проверка размера файла (макс. 10MB)
+                    if (file.size > 10 * 1024 * 1024) {
+                        app.showToast('Файл слишком большой. Максимальный размер 10MB.', 'warning');
+                        this.value = '';
+                        return;
+                    }
+                    
+                    // Проверка типа файла
+                    const allowedTypes = ['application/pdf', 'image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
+                    if (!allowedTypes.includes(file.type)) {
+                        app.showToast('Разрешены только PDF, JPG, PNG и GIF файлы.', 'warning');
+                        this.value = '';
+                        return;
+                    }
+                    
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        // Сохраняем файл в localStorage
+                        const fileData = {
+                            name: file.name,
+                            type: file.type,
+                            size: file.size,
+                            data: e.target.result,
+                            timestamp: new Date().toISOString()
+                        };
+                        
+                        // Сохраняем в временное хранилище формы
+                        localStorage.setItem('motodiag_auction_file', JSON.stringify(fileData));
+                        
+                        // Показываем превью
+                        auctionPreview.innerHTML = '';
+                        auctionPreview.classList.remove('hidden');
+                        
+                        if (file.type === 'application/pdf') {
+                            auctionPreview.innerHTML = `
+                                <div class="file-preview-item">
+                                    <div class="file-icon">📄</div>
+                                    <div class="file-info">
+                                        <div class="file-name">${file.name}</div>
+                                        <div class="file-size">${(file.size / 1024 / 1024).toFixed(2)} MB</div>
+                                    </div>
+                                    <button type="button" class="file-remove" onclick="app.removeAuctionFile()">×</button>
+                                </div>
+                            `;
+                        } else {
+                            auctionPreview.innerHTML = `
+                                <div class="file-preview-item">
+                                    <img src="${e.target.result}" alt="Превью" class="file-image">
+                                    <div class="file-info">
+                                        <div class="file-name">${file.name}</div>
+                                        <div class="file-size">${(file.size / 1024 / 1024).toFixed(2)} MB</div>
+                                    </div>
+                                    <button type="button" class="file-remove" onclick="app.removeAuctionFile()">×</button>
+                                </div>
+                            `;
+                        }
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+        }
+        
+        // Загрузка сохраненного файла при инициализации
+        this.loadAuctionFile();
+    },
+
+    // Удаление аукционного файла
+    removeAuctionFile() {
+        localStorage.removeItem('motodiag_auction_file');
+        const auctionPreview = document.getElementById('auctionLotPreview');
+        const auctionFileInput = document.getElementById('auction_lot_file');
+        
+        if (auctionPreview) auctionPreview.classList.add('hidden');
+        if (auctionFileInput) auctionFileInput.value = '';
+        
+        this.showToast('Файл удален', 'success');
+    },
+
+    // Загрузка сохраненного аукционного файла
+    loadAuctionFile() {
+        try {
+            const savedFile = localStorage.getItem('motodiag_auction_file');
+            if (savedFile) {
+                const fileData = JSON.parse(savedFile);
+                const auctionPreview = document.getElementById('auctionLotPreview');
+                
+                if (auctionPreview) {
+                    auctionPreview.innerHTML = '';
+                    auctionPreview.classList.remove('hidden');
+                    
+                    if (fileData.type === 'application/pdf') {
+                        auctionPreview.innerHTML = `
+                            <div class="file-preview-item">
+                                <div class="file-icon">📄</div>
+                                <div class="file-info">
+                                    <div class="file-name">${fileData.name}</div>
+                                    <div class="file-size">${(fileData.size / 1024 / 1024).toFixed(2)} MB</div>
+                                </div>
+                                <button type="button" class="file-remove" onclick="app.removeAuctionFile()">×</button>
+                            </div>
+                        `;
+                    } else {
+                        auctionPreview.innerHTML = `
+                            <div class="file-preview-item">
+                                <img src="${fileData.data}" alt="Превью" class="file-image">
+                                <div class="file-info">
+                                    <div class="file-name">${fileData.name}</div>
+                                    <div class="file-size">${(fileData.size / 1024 / 1024).toFixed(2)} MB</div>
+                                </div>
+                                <button type="button" class="file-remove" onclick="app.removeAuctionFile()">×</button>
+                            </div>
+                        `;
+                    }
+                }
+            }
+        } catch (e) {
+            console.warn('Ошибка загрузки аукционного файла:', e);
+        }
+    },
+
+    // Инициализация загрузки фотографий для отчета (до 100 фото)
+    initPhotoUpload() {
+        const photoInput = document.getElementById('client_photos');
+        const photoPreview = document.getElementById('clientPhotosPreview');
+        
+        if (photoInput && photoPreview) {
+            photoInput.addEventListener('change', function(e) {
+                const files = Array.from(e.target.files);
+                
+                // Увеличиваем лимит до 100 фото
+                if (files.length > 100) {
+                    app.showToast('Максимум 100 фотографий', 'warning');
+                    this.value = '';
+                    return;
+                }
+                
+                // Проверка размера и типа каждого файла
+                const validFiles = files.filter(file => {
+                    if (file.size > 5 * 1024 * 1024) {
+                        app.showToast(`Файл ${file.name} слишком большой. Максимум 5MB.`, 'warning');
+                        return false;
+                    }
+                    
+                    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+                    if (!allowedTypes.includes(file.type)) {
+                        app.showToast(`Файл ${file.name} не является изображением.`, 'warning');
+                        return false;
+                    }
+                    
+                    return true;
+                });
+                
+                if (validFiles.length === 0) return;
+                
+                // Показываем индикатор загрузки
+                this.disabled = true;
+                const originalText = this.nextElementSibling?.querySelector('.upload-text');
+                if (originalText) {
+                    originalText.textContent = `Загрузка ${validFiles.length} фото...`;
+                }
+                
+                // Сохраняем файлы
+                app.saveClientPhotos(validFiles).finally(() => {
+                    this.disabled = false;
+                    if (originalText) {
+                        originalText.textContent = 'Нажмите для загрузки фотографий';
+                    }
+                    this.value = '';
+                });
+            });
+
+            // Добавляем обработчик перетаскивания
+            const uploadArea = document.querySelector('.client-photos-upload');
+            if (uploadArea) {
+                uploadArea.addEventListener('dragover', function(e) {
+                    e.preventDefault();
+                    this.classList.add('dragover');
+                });
+
+                uploadArea.addEventListener('dragleave', function(e) {
+                    e.preventDefault();
+                    this.classList.remove('dragover');
+                });
+
+                uploadArea.addEventListener('drop', function(e) {
+                    e.preventDefault();
+                    this.classList.remove('dragover');
+                    const files = Array.from(e.dataTransfer.files).filter(file => 
+                        file.type.startsWith('image/')
+                    );
+                    
+                    if (files.length > 0) {
+                        if (files.length > 100) {
+                            app.showToast('Максимум 100 фотографий', 'warning');
+                            return;
+                        }
+                        app.saveClientPhotos(files);
+                    }
+                });
+            }
+        }
+        
+        // Загрузка сохраненных фотографий
+        this.loadClientPhotos();
+    },
+
+    // Сохранение фотографий клиента с прогрессом
+    saveClientPhotos(files) {
+        return new Promise((resolve) => {
+            const totalFiles = files.length;
+            let processed = 0;
+            
+            const processNextFile = () => {
+                if (processed >= totalFiles) {
+                    this.loadClientPhotos();
+                    this.showToast(`Добавлено ${totalFiles} фотографий`, 'success');
+                    resolve();
+                    return;
+                }
+                
+                const file = files[processed];
+                const reader = new FileReader();
+                
+                reader.onload = (e) => {
+                    const photoData = {
+                        name: file.name,
+                        type: file.type,
+                        size: file.size,
+                        data: e.target.result,
+                        timestamp: new Date().toISOString(),
+                        id: Date.now() + processed // Уникальный ID для каждой фото
+                    };
+                    
+                    // Получаем существующие фото
+                    const existingPhotos = this.getClientPhotos();
+                    
+                    // Добавляем новые (максимум 100)
+                    const allPhotos = [...existingPhotos, photoData].slice(-100);
+                    
+                    // Сохраняем с оптимизацией для большого количества
+                    this.saveClientPhotosToStorage(allPhotos);
+                    
+                    processed++;
+                    
+                    // Обновляем прогресс каждые 10 файлов или в конце
+                    if (processed % 10 === 0 || processed === totalFiles) {
+                        this.updatePhotoUploadProgress(processed, totalFiles);
+                    }
+                    
+                    // Обрабатываем следующий файл с небольшой задержкой для UI
+                    setTimeout(processNextFile, 50);
+                };
+                
+                reader.onerror = () => {
+                    processed++;
+                    processNextFile();
+                };
+                
+                reader.readAsDataURL(file);
+            };
+            
+            processNextFile();
+        });
+    },
+
+    // Оптимизированное сохранение фото в localStorage
+    saveClientPhotosToStorage(photos) {
+        try {
+            // Разбиваем на чанки если слишком много данных
+            if (photos.length > 20) {
+                // Для большого количества фото используем сжатие данных
+                const compressedPhotos = photos.map(photo => ({
+                    ...photo,
+                    // Можно добавить логику сжатия здесь при необходимости
+                    compressed: true
+                }));
+                
+                // Сохраняем в несколько ключей если нужно
+                localStorage.setItem('motodiag_client_photos', JSON.stringify(compressedPhotos));
+            } else {
+                localStorage.setItem('motodiag_client_photos', JSON.stringify(photos));
+            }
+        } catch (e) {
+            console.warn('Ошибка сохранения фотографий:', e);
+            // Если превышен лимит localStorage, предлагаем очистить старые фото
+            if (e.name === 'QuotaExceededError') {
+                this.showToast('Превышен лимит хранилища. Удалите старые фотографии.', 'warning');
+            }
+        }
+    },
+
+    // Получение фотографий клиента
+    getClientPhotos() {
+        try {
+            return JSON.parse(localStorage.getItem('motodiag_client_photos') || '[]');
+        } catch (e) {
+            console.warn('Ошибка загрузки фотографий:', e);
+            return [];
+        }
+    },
+
+    // Обновление прогресса загрузки
+    updatePhotoUploadProgress(processed, total) {
+        const progressElement = document.getElementById('uploadProgress');
+        if (!progressElement) {
+            // Создаем элемент прогресса если его нет
+            const uploadArea = document.querySelector('.client-photos-upload');
+            if (uploadArea) {
+                const progressHTML = `
+                    <div class="upload-progress" id="uploadProgress">
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: ${(processed / total) * 100}%"></div>
+                        </div>
+                        <div class="progress-text">${processed}/${total}</div>
+                    </div>
+                `;
+                uploadArea.insertAdjacentHTML('beforeend', progressHTML);
+            }
+        } else {
+            const progressFill = progressElement.querySelector('.progress-fill');
+            const progressText = progressElement.querySelector('.progress-text');
+            if (progressFill) progressFill.style.width = `${(processed / total) * 100}%`;
+            if (progressText) progressText.textContent = `${processed}/${total}`;
+            
+            // Удаляем прогресс после завершения
+            if (processed === total) {
+                setTimeout(() => {
+                    progressElement.remove();
+                }, 2000);
+            }
+        }
+    },
+
+    // Загрузка сохраненных фотографий клиента с пагинацией
+    loadClientPhotos() {
+        try {
+            const savedPhotos = this.getClientPhotos();
+            const photoPreview = document.getElementById('clientPhotosPreview');
+            const photoCount = document.getElementById('photoCount');
+            
+            if (photoCount) {
+                photoCount.textContent = savedPhotos.length;
+                
+                // Показываем предупреждение при接近 лимита
+                if (savedPhotos.length > 80) {
+                    photoCount.style.color = 'var(--warning-color)';
+                    photoCount.style.fontWeight = 'bold';
+                } else {
+                    photoCount.style.color = '';
+                    photoCount.style.fontWeight = '';
+                }
+            }
+            
+            // Показываем/скрываем кнопку очистки
+            const clearBtn = document.getElementById('clearAllPhotosBtn');
+            if (clearBtn) {
+                clearBtn.style.display = savedPhotos.length > 0 ? 'block' : 'none';
+            }
+            
+            if (photoPreview) {
+                photoPreview.innerHTML = '';
+                
+                if (savedPhotos.length === 0) {
+                    photoPreview.innerHTML = '<div class="no-photos">Нет загруженных фотографий</div>';
+                    return;
+                }
+                
+                // Показываем только первые 12 фото в превью
+                const photosToShow = savedPhotos.slice(-12).reverse();
+                
+                photosToShow.forEach((photo, index) => {
+                    const actualIndex = savedPhotos.length - 12 + index;
+                    const photoElement = document.createElement('div');
+                    photoElement.className = 'photo-preview-item';
+                    photoElement.innerHTML = `
+                        <img src="${photo.data}" alt="Фото ${actualIndex + 1}" class="photo-image">
+                        <div class="photo-overlay">
+                            <button type="button" class="photo-remove" onclick="app.removeClientPhoto(${actualIndex})" title="Удалить фото">×</button>
+                        </div>
+                    `;
+                    photoPreview.appendChild(photoElement);
+                });
+                
+                // Если фото больше 12, показываем счетчик
+                if (savedPhotos.length > 12) {
+                    const morePhotosElement = document.createElement('div');
+                    morePhotosElement.className = 'more-photos-indicator';
+                    morePhotosElement.innerHTML = `
+                        <div class="more-photos-count">+${savedPhotos.length - 12}</div>
+                        <div class="more-photos-text">еще фото</div>
+                    `;
+                    morePhotosElement.onclick = () => this.showAllPhotosModal(savedPhotos);
+                    photoPreview.appendChild(morePhotosElement);
+                }
+            }
+            
+            // Проверяем оптимизацию
+            this.optimizePhotoStorage();
+            
+        } catch (e) {
+            console.warn('Ошибка загрузки фотографий:', e);
+        }
+    },
+
+    // Модальное окно со всеми фотографиями
+    showAllPhotosModal(photos) {
+        const modal = document.createElement('div');
+        modal.className = 'modal';
+        modal.innerHTML = `
+            <div class="modal-content" style="max-width: 90vw; max-height: 90vh;">
+                <div class="modal-header">
+                    <h3>📷 Все фотографии (${photos.length})</h3>
+                    <button class="modal-close" onclick="this.closest('.modal').remove()">×</button>
+                </div>
+                <div class="modal-body">
+                    <div class="all-photos-grid">
+                        ${photos.map((photo, index) => `
+                            <div class="all-photo-item">
+                                <img src="${photo.data}" alt="Фото ${index + 1}">
+                                <div class="all-photo-actions">
+                                    <button class="btn btn-sm btn-danger" onclick="app.removeClientPhoto(${index}); this.closest('.modal').remove()">
+                                        Удалить
+                                    </button>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+                <div class="modal-actions">
+                    <button class="btn btn-secondary" onclick="app.clearAllPhotos(); this.closest('.modal').remove()">
+                        🗑️ Удалить все фото
+                    </button>
+                    <button class="btn" onclick="this.closest('.modal').remove()">Закрыть</button>
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(modal);
+        
+        // Закрытие по клику вне контента
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                modal.remove();
+            }
+        });
+    },
+
+    // Удаление фотографии клиента
+    removeClientPhoto(index) {
+        try {
+            const savedPhotos = this.getClientPhotos();
+            if (index >= 0 && index < savedPhotos.length) {
+                savedPhotos.splice(index, 1);
+                this.saveClientPhotosToStorage(savedPhotos);
+                this.loadClientPhotos();
+                this.showToast('Фотография удалена', 'success');
+            }
+        } catch (e) {
+            console.warn('Ошибка удаления фотографии:', e);
+        }
+    },
+
+    // Удаление всех фотографий
+    clearAllPhotos() {
+        if (!confirm('Вы уверены, что хотите удалить все фотографии?')) return;
+        
+        localStorage.removeItem('motodiag_client_photos');
+        this.loadClientPhotos();
+        this.showToast('Все фотографии удалены', 'success');
+    },
+
+    // Оптимизация для работы с большим количеством фото
+    optimizePhotoStorage() {
+        const photos = this.getClientPhotos();
+        
+        // Если фото больше 50, предлагаем оптимизацию
+        if (photos.length > 50) {
+            const usedSpace = this.calculateStorageUsage();
+            if (usedSpace > 5) { // Если больше 5MB
+                this.showToast(
+                    `Загружено ${photos.length} фото (${usedSpace}MB). ` +
+                    `Рекомендуется удалить старые фото для лучшей производительности.`,
+                    'info',
+                    6000
+                );
+            }
+        }
+    },
+
+    // Расчет использования хранилища
+    calculateStorageUsage() {
+        try {
+            const photos = this.getClientPhotos();
+            let totalSize = 0;
+            
+            photos.forEach(photo => {
+                if (photo.data) {
+                    // Приблизительный расчет размера base64 данных
+                    totalSize += (photo.data.length * 3) / 4 / 1024 / 1024; // MB
+                }
+            });
+            
+            return Math.round(totalSize * 100) / 100;
+        } catch (e) {
+            return 0;
+        }
+    },
+
+    // Оптимизированная генерация PDF с большим количеством фото
+    generateClientPDF() {
+        if (!this.validateForm()) {
+            this.showToast('Заполните основные данные формы отчета', 'warning');
+            return;
+        }
+        
+        try {
+            // Получаем данные формы
+            const form = document.getElementById('diagnosticForm');
+            const formData = new FormData(form);
+            const data = Object.fromEntries(formData.entries());
+            
+            const brand = data.brand === 'Другая марка' ? data.brand_custom : data.brand;
+            const model = data.model === 'Другая модель' ? data.model_custom : data.model;
+            
+            // Получаем данные клиента
+            const clientName = document.getElementById('client_name')?.value || 'Клиент';
+            const clientNotes = document.getElementById('client_notes')?.value || '';
+            
+            // Получаем фотографии
+            const savedPhotos = this.getClientPhotos();
+            
+            // Ограничиваем количество фото в PDF для избежания перегрузки
+            const photosForPdf = savedPhotos.slice(-50); // Максимум 50 фото в PDF
+            
+            // Создаем HTML для PDF
+            const pdfContent = this.generateClientPDFContent(brand, model, data, clientName, clientNotes, photosForPdf);
+            
+            // Открываем в новом окне для печати/сохранения как PDF
+            const printWindow = window.open('', '_blank');
+            printWindow.document.write(`
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <title>Отчет по мотоциклу ${brand} ${model}</title>
+                    <style>
+                        body { 
+                            font-family: Arial, sans-serif; 
+                            line-height: 1.6; 
+                            color: #333; 
+                            max-width: 800px; 
+                            margin: 0 auto; 
+                            padding: 20px;
+                        }
+                        .header { 
+                            text-align: center; 
+                            border-bottom: 3px solid #4F46E5; 
+                            padding-bottom: 20px; 
+                            margin-bottom: 30px;
+                        }
+                        .contact-info {
+                            background: #f8fafc;
+                            padding: 15px;
+                            border-radius: 8px;
+                            margin: 20px 0;
+                            text-align: center;
+                        }
+                        .section { 
+                            margin: 30px 0; 
+                            page-break-inside: avoid;
+                        }
+                        .section-title { 
+                            color: #4F46E5; 
+                            border-bottom: 2px solid #e5e7eb; 
+                            padding-bottom: 8px; 
+                            margin-bottom: 15px;
+                            font-size: 1.4em;
+                        }
+                        .info-grid { 
+                            display: grid; 
+                            grid-template-columns: 1fr 1fr; 
+                            gap: 15px; 
+                            margin: 15px 0;
+                        }
+                        .info-item { 
+                            margin: 8px 0;
+                        }
+                        .photo-grid {
+                            display: grid;
+                            grid-template-columns: repeat(2, 1fr);
+                            gap: 10px;
+                            margin: 20px 0;
+                        }
+                        .photo-item img {
+                            width: 100%;
+                            height: 150px;
+                            object-fit: cover;
+                            border-radius: 8px;
+                            border: 1px solid #e5e7eb;
+                        }
+                        .verdict {
+                            background: #ecfdf5;
+                            padding: 20px;
+                            border-radius: 8px;
+                            border-left: 4px solid #10B981;
+                            margin: 20px 0;
+                        }
+                        .footer {
+                            text-align: center;
+                            margin-top: 40px;
+                            padding-top: 20px;
+                            border-top: 1px solid #e5e7eb;
+                            color: #6B7280;
+                            font-size: 0.9em;
+                        }
+                        .photos-count {
+                            text-align: center;
+                            font-style: italic;
+                            color: #6B7280;
+                            margin: 10px 0;
+                        }
+                        @media print {
+                            body { padding: 0; }
+                            .no-print { display: none; }
+                            .photo-grid {
+                                grid-template-columns: repeat(2, 1fr);
+                            }
+                        }
+                    </style>
+                </head>
+                <body>
+                    ${pdfContent}
+                    <div class="no-print" style="text-align: center; margin-top: 30px;">
+                        <button onclick="window.print()" style="padding: 10px 20px; background: #4F46E5; color: white; border: none; border-radius: 6px; cursor: pointer;">
+                            🖨️ Печать / Сохранить как PDF
+                        </button>
+                    </div>
+                </body>
+                </html>
+            `);
+            printWindow.document.close();
+            
+            if (savedPhotos.length > 50) {
+                this.showToast(`PDF отчет готов! Показано 50 из ${savedPhotos.length} фото`, 'success');
+            } else {
+                this.showToast('PDF отчет готов к печати', 'success');
+            }
+            
+        } catch (e) {
+            console.error('Ошибка генерации PDF:', e);
+            this.showToast('Ошибка при создании PDF отчета', 'warning');
+        }
+    },
+
+    // Генерация содержимого PDF отчета
+    generateClientPDFContent(brand, model, data, clientName, clientNotes, photos) {
+        let content = `
+            <div class="header">
+                <h1>🏍️ Отчет о диагностике мотоцикла</h1>
+                <p>Профессиональная диагностика и оценка состояния</p>
+            </div>
+            
+            <div class="contact-info">
+                <strong>Сергей Ландик</strong> | 8 950 005-05-08 | motopodbor.ru
+            </div>
+            
+            <div class="section">
+                <h2 class="section-title">📋 Основная информация</h2>
+                <div class="info-grid">
+                    <div class="info-item"><strong>Марка:</strong> ${this.escapeHtml(brand)}</div>
+                    <div class="info-item"><strong>Модель:</strong> ${this.escapeHtml(model)}</div>
+                    <div class="info-item"><strong>Год выпуска:</strong> ${this.escapeHtml(data.year || 'Не указан')}</div>
+                    <div class="info-item"><strong>Пробег:</strong> ${this.escapeHtml(data.mileage_km ? data.mileage_km + ' тыс. км' : data.mileage_miles ? data.mileage_miles + ' тыс. миль' : 'Не указан')}</div>
+                    <div class="info-item"><strong>VIN:</strong> ${this.escapeHtml(data.vin || 'Не указан')}</div>
+                    <div class="info-item"><strong>Класс:</strong> ${this.escapeHtml(data.motorcycle_class || 'Не указан')}</div>
+                </div>
+            </div>
+        `;
+        
+        // Добавляем юридическую информацию
+        if (data.legal_status || data.legal_comment) {
+            content += `
+                <div class="section">
+                    <h2 class="section-title">📑 Юридическая проверка</h2>
+                    <div class="info-item"><strong>Статус:</strong> ${this.escapeHtml(data.legal_status || 'Не указан')}</div>
+                    ${data.legal_comment ? `<div class="info-item"><strong>Комментарий:</strong> ${this.escapeHtml(data.legal_comment)}</div>` : ''}
+                </div>
+            `;
+        }
+        
+        // Добавляем выводы эксперта
+        if (data.key_finding || data.expert_verdict) {
+            content += `
+                <div class="section">
+                    <h2 class="section-title">💡 Заключение эксперта</h2>
+                    <div class="verdict">
+                        ${data.key_finding ? `<p><strong>Ключевая находка:</strong> ${this.escapeHtml(data.key_finding)}</p>` : ''}
+                        ${data.expert_verdict ? `<p><strong>Вердикт:</strong> ${this.escapeHtml(data.expert_verdict)}</p>` : ''}
+                    </div>
+                </div>
+            `;
+        }
+        
+        // Добавляем фотографии
+        if (photos.length > 0) {
+            content += `
+                <div class="section">
+                    <h2 class="section-title">📷 Фотографии</h2>
+                    ${photos.length > 20 ? `<div class="photos-count">Показано ${photos.length} из ${this.getClientPhotos().length} фотографий</div>` : ''}
+                    <div class="photo-grid">
+            `;
+            
+            photos.forEach(photo => {
+                content += `
+                    <div class="photo-item">
+                        <img src="${photo.data}" alt="Фото осмотра">
+                    </div>
+                `;
+            });
+            
+            content += `
+                    </div>
+                </div>
+            `;
+        }
+        
+        // Добавляем заметки для клиента
+        if (clientNotes) {
+            content += `
+                <div class="section">
+                    <h2 class="section-title">📝 Дополнительные заметки</h2>
+                    <p>${this.escapeHtml(clientNotes)}</p>
+                </div>
+            `;
+        }
+        
+        // Футер
+        content += `
+            <div class="footer">
+                <p>Отчет сгенерирован ${new Date().toLocaleDateString('ru-RU')} | МотоДиагностика PRO v2.4.0</p>
+                <p>📞 8 950 005-05-08 | 🌐 motopodbor.ru</p>
+            </div>
+        `;
+        
+        return content;
+    }
+};
+
+// Обновляем очистку формы
+const originalClearForm = app.clearForm;
+app.clearForm = function() {
+    originalClearForm.call(this);
+    
+    // Очищаем файлы аукционных листов
+    this.removeAuctionFile();
+    
+    // Очищаем фотографии клиента
+    this.clearAllPhotos();
+    
+    // Очищаем поля клиентского отчета
+    const clientName = document.getElementById('client_name');
+    const clientNotes = document.getElementById('client_notes');
+    if (clientName) clientName.value = '';
+    if (clientNotes) clientNotes.value = '';
+};
+
+// Инициализация приложения после загрузки DOM
+document.addEventListener('DOMContentLoaded', function() {
+    try {
+        app.init();
+        
+        // Инициализация поиска
+        const searchReports = document.getElementById('searchReports');
+        if (searchReports) {
+            searchReports.addEventListener('input', () => app.loadReportsList());
+        }
+        
+        const searchInspections = document.getElementById('searchInspections');
+        if (searchInspections) {
+            searchInspections.addEventListener('input', () => app.loadInspectionsList());
+        }
+        
+        // Инициализация кнопок статистики
+        document.querySelectorAll('.grid-btn[data-period]').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.grid-btn[data-period]').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                app.updateStatistics(this.getAttribute('data-period'));
+            });
+        });
+        
+        // Инициализация кнопки генерации статистики
+        const generateStatsBtn = document.getElementById('generateStatsBtn');
+        if (generateStatsBtn) {
+            generateStatsBtn.addEventListener('click', () => {
+                // Простая реализация для демонстрации
+                const statsOutput = document.getElementById('statsOutput');
+                const copyStatsBtn = document.getElementById('copyStatsBtn');
+                
+                if (statsOutput) {
+                    statsOutput.textContent = 'Функция генерации поста статистики в разработке';
+                    statsOutput.classList.remove('hidden');
+                }
+                
+                if (copyStatsBtn) {
+                    copyStatsBtn.classList.remove('hidden');
+                }
+            });
+        }
+        
+    } catch (e) {
+        console.error('Критическая ошибка инициализации:', e);
+        alert('Ошибка загрузки приложения. Попробуйте обновить страницу.');
+    }
+});
