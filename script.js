@@ -164,7 +164,7 @@ const app = {
         inspectionsDatabase: [],
         deferredPrompt: null,
         notificationTimeouts: [],
-        inspectionCheckInterval: null
+        activeToasts: new Set() // Добавляем отслеживание активных уведомлений
     },
     init() {
         try {
@@ -231,15 +231,6 @@ const app = {
         
         // Инициализация всплывающих подсказок для классов и коробок
         this.initEnhancedTooltips();
-        
-        // Инициализация улучшенной валидации
-        this.initEnhancedValidation();
-        
-        // Инициализация менеджера проверок
-        this.initInspectionsManager();
-        
-        // Инициализация обработчиков импорта/экспорта
-        this.initExportImportHandlers();
     },
     
     initNavigation() {
@@ -450,50 +441,6 @@ const app = {
         this.updateProgress();
     },
     
-    // Улучшенная валидация формы
-    initEnhancedValidation() {
-        const form = document.getElementById('diagnosticForm');
-        if (!form) return;
-        
-        const inputs = form.querySelectorAll('input[required], select[required]');
-        
-        inputs.forEach(input => {
-            // Добавляем индикатор обязательных полей
-            const label = form.querySelector(`label[for="${input.id}"]`);
-            if (label && !label.querySelector('.required-field')) {
-                label.classList.add('required-field');
-            }
-            
-            input.addEventListener('blur', function() {
-                this.classList.remove('validation-error');
-                if (this.hasAttribute('required') && !this.value.trim()) {
-                    this.classList.add('validation-error');
-                    this.setAttribute('aria-invalid', 'true');
-                } else {
-                    this.setAttribute('aria-invalid', 'false');
-                }
-            });
-            
-            input.addEventListener('input', function() {
-                if (this.value.trim()) {
-                    this.classList.remove('validation-error');
-                    this.setAttribute('aria-invalid', 'false');
-                }
-                
-                // Специфичная валидация для VIN
-                if (this.id === 'vin' && this.value.trim()) {
-                    this.validateVIN();
-                }
-            });
-        });
-    },
-
-    // Валидация VIN номера
-    validateVIN(vin) {
-        const vinRegex = /^[A-HJ-NPR-Z0-9]{17}$/i;
-        return vinRegex.test(vin);
-    },
-
     initScrollToTop() {
         const btn = document.getElementById('scrollToTopBtn');
         if (!btn) return;
@@ -675,32 +622,29 @@ const app = {
         toast.setAttribute('role', 'status');
         
         let toastContent = `
-            <div class="toast-content">
-                <div class="toast-text">
-                    <div class="toast-title">${this.escapeHtml(title)}</div>
-                    <div class="toast-description">${this.escapeHtml(description)}</div>
+            <div class="toast-title">${this.escapeHtml(title)}</div>
+            <div class="toast-description">${this.escapeHtml(description)}</div>
         `;
         
         if (examples) {
             toastContent += `
-                    <div class="toast-examples">
-                        <strong>Примеры:</strong> ${this.escapeHtml(examples)}
-                    </div>
+                <div class="toast-examples">
+                    <strong>Примеры:</strong> ${this.escapeHtml(examples)}
+                </div>
             `;
         }
-        
-        toastContent += `
-                </div>
-                <button class="toast-close" onclick="this.parentElement.parentElement.remove()">×</button>
-            </div>
-        `;
         
         toast.innerHTML = toastContent;
         
         container.appendChild(toast);
         
         // Аудио/вибро по настройкам
-        this.playNotification('info');
+        const vibrationEl = document.getElementById('vibration');
+        const soundEl = document.getElementById('soundNotifications');
+        
+        if (vibrationEl && vibrationEl.checked && navigator.vibrate) {
+            navigator.vibrate(50);
+        }
         
         requestAnimationFrame(() => toast.classList.add('show'));
         
@@ -871,100 +815,91 @@ const app = {
         }
     },
     
-    // Улучшенная валидация формы
     validateForm() {
         let isValid = true;
         let errorMessage = '';
         let firstErrorElement = null;
+
+        // Очищаем предыдущие уведомления об ошибках
+        this.clearErrorStyles();
         
-        const form = document.getElementById('diagnosticForm');
-        const formData = new FormData(form);
-        const data = Object.fromEntries(formData.entries());
+        const brandEl = document.getElementById('brand');
+        const modelEl = document.getElementById('model');
+        const yearEl = document.getElementById('year');
         
+        if (!brandEl || !modelEl || !yearEl) return false;
+
         // Проверка обязательных полей
-        const requiredFields = [
-            { id: 'brand', message: 'Выберите марку мотоцикла' },
-            { id: 'model', message: 'Выберите модель мотоцикла' },
-            { id: 'year', message: 'Укажите год выпуска' }
-        ];
-        
-        requiredFields.forEach(field => {
-            const element = document.getElementById(field.id);
-            if (element && !element.value.trim()) {
-                isValid = false;
-                element.classList.add('validation-error');
-                element.setAttribute('aria-invalid', 'true');
-                errorMessage = field.message;
-                if (!firstErrorElement) firstErrorElement = element;
-            }
-        });
-        
+        if (!brandEl.value) {
+            isValid = false;
+            this.markFieldError(brandEl);
+            errorMessage = 'Выберите марку мотоцикла';
+            if (!firstErrorElement) firstErrorElement = brandEl;
+        }
+
+        if (!modelEl.value) {
+            isValid = false;
+            this.markFieldError(modelEl);
+            if (!errorMessage) errorMessage = 'Выберите модель мотоцикла';
+            if (!firstErrorElement) firstErrorElement = modelEl;
+        }
+
+        if (!yearEl.value) {
+            isValid = false;
+            this.markFieldError(yearEl);
+            if (!errorMessage) errorMessage = 'Укажите год выпуска';
+            if (!firstErrorElement) firstErrorElement = yearEl;
+        }
+
         // Проверка кастомных полей
-        if (data.brand === 'Другая марка') {
+        if (brandEl.value === 'Другая марка') {
             const brandCustom = document.getElementById('brand_custom');
             if (brandCustom && !brandCustom.value.trim()) {
                 isValid = false;
-                brandCustom.classList.add('validation-error');
-                errorMessage = 'Укажите марку в поле "Введите марку"';
+                this.markFieldError(brandCustom);
+                if (!errorMessage) errorMessage = 'Укажите марку в поле "Введите марку"';
                 if (!firstErrorElement) firstErrorElement = brandCustom;
             }
         }
         
-        if (data.model === 'Другая модель') {
+        if (modelEl.value === 'Другая модель') {
             const modelCustom = document.getElementById('model_custom');
             if (modelCustom && !modelCustom.value.trim()) {
                 isValid = false;
-                modelCustom.classList.add('validation-error');
-                errorMessage = 'Укажите модель в поле "Введите модель"';
+                this.markFieldError(modelCustom);
+                if (!errorMessage) errorMessage = 'Укажите модель в поле "Введите модель"';
                 if (!firstErrorElement) firstErrorElement = modelCustom;
             }
         }
-        
+
         // Проверка года
-        const yearEl = document.getElementById('year');
-        if (yearEl && yearEl.value) {
-            const year = parseInt(yearEl.value, 10);
-            if (isNaN(year) || year < 1990 || year > 2030) {
-                isValid = false;
-                yearEl.classList.add('validation-error');
-                errorMessage = 'Год выпуска должен быть между 1990 и 2030';
-                if (!firstErrorElement) firstErrorElement = yearEl;
-            }
+        const year = parseInt(yearEl.value, 10);
+        if (yearEl.value && (isNaN(year) || year < 1990 || year > 2030)) {
+            isValid = false;
+            this.markFieldError(yearEl);
+            if (!errorMessage) errorMessage = 'Год выпуска должен быть между 1990 и 2030';
+            if (!firstErrorElement) firstErrorElement = yearEl;
         }
-        
-        // Проверка VIN
-        if (data.vin && data.vin.trim()) {
-            if (!this.validateVIN(data.vin)) {
-                isValid = false;
-                const vinEl = document.getElementById('vin');
-                vinEl.classList.add('validation-error');
-                errorMessage = 'VIN номер должен содержать ровно 17 символов (буквы и цифры)';
-                if (!firstErrorElement) firstErrorElement = vinEl;
-            }
-        }
-        
+
         // Проверка полей для запланированной проверки
         const decision = document.getElementById('decision')?.value;
         if (decision === '📅 Запланировать проверку') {
-            const requiredInspectionFields = [
-                { id: 'inspection_date', message: 'Укажите дату проверки' },
-                { id: 'inspection_time', message: 'Укажите время проверки' },
-                { id: 'inspection_address', message: 'Укажите адрес проверки' },
-                { id: 'customer_phone', message: 'Укажите телефон заказчика' }
-            ];
-            
-            requiredInspectionFields.forEach(field => {
-                const element = document.getElementById(field.id);
-                if (element && !element.value.trim()) {
+            const requiredFields = ['inspection_date', 'inspection_time', 'inspection_address', 'customer_phone'];
+            requiredFields.forEach(fieldId => {
+                const field = document.getElementById(fieldId);
+                if (field && !field.value.trim()) {
                     isValid = false;
-                    element.classList.add('validation-error');
-                    errorMessage = field.message;
-                    if (!firstErrorElement) firstErrorElement = element;
+                    this.markFieldError(field);
+                    if (!errorMessage) errorMessage = 'Для запланированной проверки заполните все обязательные поля';
+                    if (!firstErrorElement) firstErrorElement = field;
                 }
             });
         }
-        
+
         if (!isValid) {
+            // Очищаем предыдущие уведомления перед показом нового
+            this.clearAllToasts();
+            
             this.showToast(errorMessage || 'Пожалуйста, заполните все обязательные поля', 'warning');
             
             // Анимация тряски для кнопки генерации
@@ -973,7 +908,7 @@ const app = {
                 generateBtn.classList.add('shake');
                 setTimeout(() => generateBtn.classList.remove('shake'), 500);
             }
-            
+
             // Прокрутка к первому полю с ошибкой
             if (firstErrorElement) {
                 setTimeout(() => {
@@ -983,8 +918,8 @@ const app = {
                     });
                     
                     // Добавляем дополнительную анимацию для привлечения внимания
-                    firstErrorElement.classList.add('pulse-error');
-                    setTimeout(() => firstErrorElement.classList.remove('pulse-error'), 1500);
+                    firstErrorElement.classList.add('pulse');
+                    setTimeout(() => firstErrorElement.classList.remove('pulse'), 1500);
                     
                     // Фокусируемся на поле для удобства ввода
                     if (firstErrorElement.tagName === 'INPUT' || firstErrorElement.tagName === 'SELECT') {
@@ -992,14 +927,35 @@ const app = {
                     }
                 }, 300);
             }
+        } else {
+            // Если форма валидна, очищаем стили ошибок
+            this.clearErrorStyles();
         }
         
         return isValid;
     },
+
+    // Новый метод для отметки поля с ошибкой
+    markFieldError(field) {
+        field.style.borderColor = 'var(--danger-color)';
+        field.classList.add('pulse');
+    },
+
+    // Новый метод для очистки стилей ошибок
+    clearErrorStyles() {
+        const formElements = document.querySelectorAll('#diagnosticForm input, #diagnosticForm select, #diagnosticForm textarea');
+        formElements.forEach(element => {
+            element.style.borderColor = '';
+            element.classList.remove('pulse');
+        });
+    },
     
     generateReport() {
-        if (!this.validateForm()) return;
+        // Очищаем предыдущие уведомления
+        this.clearAllToasts();
         
+        if (!this.validateForm()) return;
+
         try {
             const form = document.getElementById('diagnosticForm');
             const formData = new FormData(form);
@@ -1018,7 +974,12 @@ const app = {
             this.calculateAndShowSavings(data);
             
             if (outputCard) outputCard.scrollIntoView({ behavior: 'smooth' });
-            this.showToast('Отчет успешно сгенерирован!', 'success');
+            
+            // Задержка перед показом успешного уведомления
+            setTimeout(() => {
+                this.showToast('Отчет успешно сгенерирован!', 'success');
+            }, 300);
+            
         } catch (e) {
             console.error('Ошибка генерации отчета:', e);
             this.showToast('Ошибка при создании отчета', 'warning');
@@ -1189,10 +1150,6 @@ const app = {
             brandSelect.dispatchEvent(new Event('change'));
         }
         
-        // Убираем классы валидации
-        const validationErrors = document.querySelectorAll('.validation-error');
-        validationErrors.forEach(el => el.classList.remove('validation-error'));
-        
         this.updateProgress();
         this.showToast('Форма очищена', 'success');
     },
@@ -1248,107 +1205,89 @@ const app = {
         }
     },
     
-    // Улучшенные уведомления
-    showToast(message, type = 'info', duration = 4000) {
-        // Очистка старых уведомлений
-        this.clearOldToasts();
-        
+    showToast(message, type = 'info') {
         const container = document.getElementById('toastContainer');
         if (!container) return;
         
+        // Очищаем предыдущие уведомления того же типа
+        this.clearToastsByType(type);
+        
         const toast = document.createElement('div');
+        const toastId = 'toast-' + Date.now();
+        toast.id = toastId;
         toast.className = `toast toast-${type}`;
         toast.setAttribute('role', 'status');
-        toast.setAttribute('aria-live', 'polite');
-        toast.innerHTML = `
-            <div class="toast-content">
-                <span class="toast-message">${this.escapeHtml(message)}</span>
-                <button class="toast-close" onclick="this.parentElement.parentElement.remove()">×</button>
-            </div>
-        `;
+        toast.textContent = message;
         
         container.appendChild(toast);
         
+        // Добавляем в отслеживаемые
+        this.state.activeToasts.add(toastId);
+
         // Аудио/вибро по настройкам
-        this.playNotification(type);
+        const vibrationEl = document.getElementById('vibration');
+        const soundEl = document.getElementById('soundNotifications');
+        
+        if (vibrationEl && vibrationEl.checked && navigator.vibrate) {
+            navigator.vibrate(80);
+        }
         
         requestAnimationFrame(() => toast.classList.add('show'));
         
-        // Автоудаление
-        const timeout = setTimeout(() => {
+        // Автоматическое удаление через 4 секунды
+        setTimeout(() => {
+            this.removeToast(toastId);
+        }, 4000);
+    },
+
+    // Новый метод для удаления конкретного уведомления
+    removeToast(toastId) {
+        const toast = document.getElementById(toastId);
+        if (toast) {
+            toast.classList.remove('show');
+            setTimeout(() => {
+                if (toast.parentNode) {
+                    toast.remove();
+                }
+                this.state.activeToasts.delete(toastId);
+            }, 300);
+        }
+    },
+
+    // Новый метод для очистки всех уведомлений
+    clearAllToasts() {
+        const container = document.getElementById('toastContainer');
+        if (!container) return;
+        
+        // Удаляем все уведомления
+        const toasts = container.querySelectorAll('.toast');
+        toasts.forEach(toast => {
             toast.classList.remove('show');
             setTimeout(() => {
                 if (toast.parentNode) {
                     toast.remove();
                 }
             }, 300);
-        }, duration);
-        
-        this.state.notificationTimeouts.push(timeout);
-    },
-    
-    clearOldToasts() {
-        // Очистка устаревших timeout'ов
-        this.state.notificationTimeouts = this.state.notificationTimeouts.filter(timeout => {
-            if (!timeout._destroyed) {
-                clearTimeout(timeout);
-            }
-            return false;
         });
         
-        // Ограничение количества одновременно показанных уведомлений
+        // Очищаем отслеживание
+        this.state.activeToasts.clear();
+    },
+
+    // Новый метод для очистки уведомлений определенного типа
+    clearToastsByType(type) {
         const container = document.getElementById('toastContainer');
-        if (container && container.children.length > 5) {
-            Array.from(container.children).slice(0, container.children.length - 5).forEach(child => {
-                child.remove();
-            });
-        }
-    },
-    
-    playNotification(type) {
-        const vibrationEl = document.getElementById('vibration');
-        const soundEl = document.getElementById('soundNotifications');
+        if (!container) return;
         
-        if (vibrationEl && vibrationEl.checked && navigator.vibrate) {
-            const pattern = type === 'warning' ? [100, 50, 100] : [80];
-            navigator.vibrate(pattern);
-        }
-        
-        if (soundEl && soundEl.checked) {
-            // Простая звуковая имитация через Web Audio API
-            this.playNotificationSound(type);
-        }
-    },
-    
-    playNotificationSound(type) {
-        try {
-            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-            const oscillator = audioContext.createOscillator();
-            const gainNode = audioContext.createGain();
-            
-            oscillator.connect(gainNode);
-            gainNode.connect(audioContext.destination);
-            
-            oscillator.type = 'sine';
-            
-            if (type === 'warning') {
-                oscillator.frequency.setValueAtTime(300, audioContext.currentTime);
-                oscillator.frequency.setValueAtTime(200, audioContext.currentTime + 0.1);
-            } else if (type === 'success') {
-                oscillator.frequency.setValueAtTime(523.25, audioContext.currentTime); // C5
-                oscillator.frequency.setValueAtTime(659.25, audioContext.currentTime + 0.1); // E5
-            } else {
-                oscillator.frequency.setValueAtTime(440, audioContext.currentTime); // A4
-            }
-            
-            gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
-            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
-            
-            oscillator.start(audioContext.currentTime);
-            oscillator.stop(audioContext.currentTime + 0.3);
-        } catch (e) {
-            console.log('Audio context not supported');
-        }
+        const toasts = container.querySelectorAll(`.toast-${type}`);
+        toasts.forEach(toast => {
+            toast.classList.remove('show');
+            setTimeout(() => {
+                if (toast.parentNode) {
+                    toast.remove();
+                }
+            }, 300);
+        });
     },
     
     showError(message) {
@@ -1549,460 +1488,31 @@ const app = {
         if (popularBrandEl) popularBrandEl.textContent = popularBrand;
         if (plannedInspectionsEl) plannedInspectionsEl.textContent = plannedInspections;
         if (completedInspectionsEl) completedInspectionsEl.textContent = completedInspections;
-        
-        // Показываем расширенную статистику
-        this.showAdvancedStats(periodReports, period);
     },
     
-    // Расширенная статистика и аналитика
-    generateAdvancedStats(periodReports) {
-        const stats = {
-            byBrand: {},
-            byClass: {},
-            byDecision: {},
-            priceAnalysis: {
-                totalSavings: 0,
-                avgPrice: 0,
-                maxPrice: 0,
-                minPrice: 0,
-                count: 0
-            }
-        };
-        
-        periodReports.forEach(report => {
-            // Статистика по маркам
-            stats.byBrand[report.brand] = (stats.byBrand[report.brand] || 0) + 1;
-            
-            // Статистика по классам
-            if (report.motorcycle_class) {
-                stats.byClass[report.motorcycle_class] = (stats.byClass[report.motorcycle_class] || 0) + 1;
-            }
-            
-            // Статистика по решениям
-            if (report.decision) {
-                stats.byDecision[report.decision] = (stats.byDecision[report.decision] || 0) + 1;
-            }
-            
-            // Анализ цен
-            const price = this.parseMoneyValue(report.price);
-            if (price > 0) {
-                stats.priceAnalysis.totalSavings += this.parseMoneyValue(report.seller_discount) || 0;
-                stats.priceAnalysis.avgPrice += price;
-                stats.priceAnalysis.maxPrice = Math.max(stats.priceAnalysis.maxPrice, price);
-                stats.priceAnalysis.minPrice = stats.priceAnalysis.minPrice === 0 ? price : 
-                    Math.min(stats.priceAnalysis.minPrice, price);
-                stats.priceAnalysis.count++;
-            }
-        });
-        
-        if (stats.priceAnalysis.count > 0) {
-            stats.priceAnalysis.avgPrice = Math.round(stats.priceAnalysis.avgPrice / stats.priceAnalysis.count);
-        }
-        
-        return stats;
-    },
-    
-    showAdvancedStats(periodReports, period) {
-        const stats = this.generateAdvancedStats(periodReports);
-        const statsDetails = document.getElementById('statsDetails');
-        
-        if (!statsDetails) {
-            // Создаем контейнер для расширенной статистики
-            const statsContainer = document.querySelector('#stats-tab .card');
-            if (!statsContainer) return;
-            
-            const newStatsDetails = document.createElement('div');
-            newStatsDetails.id = 'statsDetails';
-            newStatsDetails.className = 'stats-details';
-            newStatsDetails.innerHTML = this.generateAdvancedStatsHTML(stats, period);
-            statsContainer.appendChild(newStatsDetails);
-        } else {
-            statsDetails.innerHTML = this.generateAdvancedStatsHTML(stats, period);
-        }
-    },
-    
-    generateAdvancedStatsHTML(stats, period) {
-        let html = `<h3 class="section-title" style="font-size: 1rem;">📊 Расширенная статистика за ${this.getPeriodName(period)}</h3>`;
-        
-        html += `<div class="stats-grid-detailed">`;
-        
-        // Статистика по маркам (топ-3)
-        const topBrands = Object.entries(stats.byBrand)
-            .sort((a, b) => b[1] - a[1])
-            .slice(0, 3);
-        
-        if (topBrands.length > 0) {
-            html += `<div class="stat-detail-item">
-                <div class="stat-detail-label">Популярные марки</div>
-                <div class="stat-detail-value">${topBrands.map(([brand, count]) => `${brand}: ${count}`).join('<br>')}</div>
-            </div>`;
-        }
-        
-        // Статистика по классам (топ-3)
-        const topClasses = Object.entries(stats.byClass)
-            .sort((a, b) => b[1] - a[1])
-            .slice(0, 3);
-        
-        if (topClasses.length > 0) {
-            html += `<div class="stat-detail-item">
-                <div class="stat-detail-label">Популярные классы</div>
-                <div class="stat-detail-value">${topClasses.map(([cls, count]) => `${cls}: ${count}`).join('<br>')}</div>
-            </div>`;
-        }
-        
-        // Статистика по решениям
-        if (Object.keys(stats.byDecision).length > 0) {
-            html += `<div class="stat-detail-item">
-                <div class="stat-detail-label">Решения</div>
-                <div class="stat-detail-value">${Object.entries(stats.byDecision).map(([decision, count]) => `${decision}: ${count}`).join('<br>')}</div>
-            </div>`;
-        }
-        
-        // Анализ цен
-        if (stats.priceAnalysis.count > 0) {
-            html += `<div class="stat-detail-item">
-                <div class="stat-detail-label">Анализ цен</div>
-                <div class="stat-detail-value">
-                    Средняя: ${this.formatMoney(stats.priceAnalysis.avgPrice)}<br>
-                    Мин: ${this.formatMoney(stats.priceAnalysis.minPrice)}<br>
-                    Макс: ${this.formatMoney(stats.priceAnalysis.maxPrice)}
-                </div>
-            </div>`;
-        }
-        
-        html += `</div>`;
-        
-        return html;
-    },
-    
-    getPeriodName(period) {
-        const names = {
-            'week': 'неделю',
-            'month': 'месяц',
-            'quarter': 'квартал',
-            'year': 'год'
-        };
-        return names[period] || 'период';
-    },
-    
-    // Дополнительные методы для проверок
+    // Дополнительные методы для проверок (упрощенная версия)
     loadInspectionsList() {
         const inspectionsList = document.getElementById('inspectionsList');
         if (!inspectionsList) return;
-        
-        const searchValue = (document.getElementById('searchInspections')?.value || '').toLowerCase();
         
         if (this.state.inspectionsDatabase.length === 0) {
             inspectionsList.innerHTML = '<div class="text-center" style="padding: 20px; color: var(--text-light);">Нет запланированных проверок</div>';
             return;
         }
         
-        const filtered = this.state.inspectionsDatabase.filter(inspection => {
-            if (!searchValue) return true;
-            
-            return (
-                inspection.brand?.toLowerCase().includes(searchValue) ||
-                inspection.model?.toLowerCase().includes(searchValue) ||
-                inspection.inspection_address?.toLowerCase().includes(searchValue)
-            );
-        });
-        
-        if (filtered.length === 0) {
-            inspectionsList.innerHTML = '<div class="text-center" style="padding: 20px; color: var(--text-light);">Проверки не найдены</div>';
-            return;
-        }
-        
-        inspectionsList.innerHTML = filtered.map(inspection => `
-            <div class="inspection-item ${inspection.status === 'completed' ? 'completed' : ''}">
+        // Простая реализация для демонстрации
+        inspectionsList.innerHTML = this.state.inspectionsDatabase.map(inspection => `
+            <div class="inspection-item">
                 <div class="inspection-header">
                     <div class="inspection-title">${this.escapeHtml(inspection.brand)} ${this.escapeHtml(inspection.model)}</div>
-                    <div class="inspection-date">${inspection.date || 'Дата не указана'} ${inspection.time || ''}</div>
+                    <div class="inspection-date">${inspection.date || 'Дата не указана'}</div>
                 </div>
                 <div class="inspection-details">
                     <div><strong>Адрес:</strong> ${this.escapeHtml(inspection.address || 'Не указан')}</div>
                     <div><strong>Телефон:</strong> ${this.escapeHtml(inspection.phone || 'Не указан')}</div>
                 </div>
-                <div class="inspection-actions">
-                    <button class="action-btn" style="background: var(--secondary-color); color: white;" onclick="app.completeInspection('${inspection.id}')">✅ Завершить</button>
-                    <button class="action-btn" style="background: var(--warning-color); color: white;" onclick="app.editInspection('${inspection.id}')">✏️ Редактировать</button>
-                    <button class="action-btn" style="background: var(--danger-color); color: white;" onclick="app.deleteInspection('${inspection.id}')">🗑️ Удалить</button>
-                </div>
             </div>
         `).join('');
-    },
-    
-    // Менеджер проверок
-    initInspectionsManager() {
-        this.checkUpcomingInspections();
-        // Проверка каждую минуту
-        this.state.inspectionCheckInterval = setInterval(() => this.checkUpcomingInspections(), 60000);
-    },
-    
-    checkUpcomingInspections() {
-        const now = new Date();
-        const upcomingInspections = this.state.inspectionsDatabase.filter(inspection => {
-            if (inspection.status !== 'planned') return false;
-            
-            const inspectionDateTime = new Date(`${inspection.date}T${inspection.time}`);
-            const timeDiff = inspectionDateTime - now;
-            const hoursDiff = timeDiff / (1000 * 60 * 60);
-            
-            return hoursDiff <= 24 && hoursDiff > 0; // Предстоящие в течение 24 часов
-        });
-        
-        if (upcomingInspections.length > 0) {
-            this.showUpcomingInspectionsNotification(upcomingInspections);
-        }
-    },
-    
-    showUpcomingInspectionsNotification(inspections) {
-        const notification = inspections.map(inspection => 
-            `${inspection.brand} ${inspection.model} - ${inspection.date} ${inspection.time}`
-        ).join('\n');
-        
-        this.showEnhancedToast(
-            '📅 Предстоящие проверки',
-            `На ближайшие 24 часа запланированы проверки:`,
-            notification
-        );
-    },
-    
-    completeInspection(inspectionId) {
-        const inspection = this.state.inspectionsDatabase.find(i => i.id === inspectionId);
-        if (inspection) {
-            inspection.status = 'completed';
-            localStorage.setItem('motodiag_inspections', JSON.stringify(this.state.inspectionsDatabase));
-            this.loadInspectionsList();
-            this.showToast('Проверка отмечена как завершенная', 'success');
-        }
-    },
-    
-    editInspection(inspectionId) {
-        // Реализация редактирования проверки
-        this.showToast('Функция редактирования проверки в разработке', 'info');
-    },
-    
-    deleteInspection(inspectionId) {
-        if (!confirm('Вы уверены, что хотите удалить эту проверку?')) return;
-        
-        this.state.inspectionsDatabase = this.state.inspectionsDatabase.filter(i => i.id !== inspectionId);
-        localStorage.setItem('motodiag_inspections', JSON.stringify(this.state.inspectionsDatabase));
-        this.loadInspectionsList();
-        this.showToast('Проверка удалена', 'success');
-    },
-    
-    // Импорт/экспорт данных
-    initExportImportHandlers() {
-        // Обработчики для экспорта/импорта
-        const exportBtn = document.getElementById('exportBtn');
-        const importBtn = document.getElementById('importBtn');
-        const exportInspectionsBtn = document.getElementById('exportInspectionsBtn');
-        const importInspectionsBtn = document.getElementById('importInspectionsBtn');
-        const exportSettingsBtn = document.getElementById('exportSettingsBtn');
-        const importSettingsBtn = document.getElementById('importSettingsBtn');
-        const clearStorageBtn = document.getElementById('clearStorageBtn');
-        
-        if (exportBtn) exportBtn.addEventListener('click', () => this.exportData('reports'));
-        if (importBtn) importBtn.addEventListener('click', () => this.handleImport('reports'));
-        if (exportInspectionsBtn) exportInspectionsBtn.addEventListener('click', () => this.exportData('inspections'));
-        if (importInspectionsBtn) importInspectionsBtn.addEventListener('click', () => this.handleImport('inspections'));
-        if (exportSettingsBtn) exportSettingsBtn.addEventListener('click', () => this.exportSettings());
-        if (importSettingsBtn) importSettingsBtn.addEventListener('click', () => this.importSettings());
-        if (clearStorageBtn) clearStorageBtn.addEventListener('click', () => this.clearAllData());
-    },
-    
-    exportData(type = 'reports') {
-        const data = type === 'reports' ? this.state.reportsDatabase : this.state.inspectionsDatabase;
-        const timestamp = new Date().toISOString().split('T')[0];
-        const filename = `motodiag_${type}_${timestamp}.json`;
-        
-        const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-        const url = URL.createObjectURL(blob);
-        
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = filename;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-        
-        this.showToast(`Данные успешно экспортированы в файл: ${filename}`, 'success');
-    },
-    
-    async importData(file, type = 'reports') {
-        return new Promise((resolve, reject) => {
-            const reader = new FileReader();
-            
-            reader.onload = (e) => {
-                try {
-                    const importedData = JSON.parse(e.target.result);
-                    
-                    if (!Array.isArray(importedData)) {
-                        throw new Error('Некорректный формат файла');
-                    }
-                    
-                    // Валидация импортируемых данных
-                    const validatedData = importedData.filter(item => 
-                        item.brand && item.model && item.timestamp
-                    );
-                    
-                    if (type === 'reports') {
-                        this.state.reportsDatabase = [...this.state.reportsDatabase, ...validatedData];
-                        localStorage.setItem('motodiag_reports', JSON.stringify(this.state.reportsDatabase));
-                    } else {
-                        this.state.inspectionsDatabase = [...this.state.inspectionsDatabase, ...validatedData];
-                        localStorage.setItem('motodiag_inspections', JSON.stringify(this.state.inspectionsDatabase));
-                    }
-                    
-                    this.showToast(`Успешно импортировано ${validatedData.length} записей`, 'success');
-                    resolve(validatedData.length);
-                    
-                } catch (error) {
-                    this.showToast('Ошибка при импорте файла: неверный формат', 'warning');
-                    reject(error);
-                }
-            };
-            
-            reader.onerror = () => {
-                this.showToast('Ошибка чтения файла', 'warning');
-                reject(new Error('File reading error'));
-            };
-            
-            reader.readAsText(file);
-        });
-    },
-    
-    async handleImport(type) {
-        const input = document.createElement('input');
-        input.type = 'file';
-        input.accept = '.json';
-        
-        input.onchange = async (e) => {
-            const file = e.target.files[0];
-            if (file) {
-                try {
-                    await this.importData(file, type);
-                    if (type === 'reports') {
-                        this.loadReportsList();
-                    } else {
-                        this.loadInspectionsList();
-                    }
-                    this.updateStatistics();
-                } catch (error) {
-                    console.error('Import error:', error);
-                }
-            }
-        };
-        
-        input.click();
-    },
-    
-    exportSettings() {
-        const settings = {
-            theme: localStorage.getItem('motodiag_theme') || 'light',
-            formData: localStorage.getItem('motodiag_form_data') || '{}',
-            reports: this.state.reportsDatabase,
-            inspections: this.state.inspectionsDatabase,
-            exportDate: new Date().toISOString()
-        };
-        
-        const timestamp = new Date().toISOString().split('T')[0];
-        const filename = `motodiag_settings_${timestamp}.json`;
-        
-        const blob = new Blob([JSON.stringify(settings, null, 2)], { type: 'application/json' });
-        const url = URL.createObjectURL(blob);
-        
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = filename;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-        
-        this.showToast('Настройки успешно экспортированы', 'success');
-    },
-    
-    importSettings() {
-        const input = document.createElement('input');
-        input.type = 'file';
-        input.accept = '.json';
-        
-        input.onchange = (e) => {
-            const file = e.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                
-                reader.onload = (e) => {
-                    try {
-                        const settings = JSON.parse(e.target.result);
-                        
-                        // Восстанавливаем настройки
-                        if (settings.theme) {
-                            localStorage.setItem('motodiag_theme', settings.theme);
-                            document.body.setAttribute('data-theme', settings.theme);
-                        }
-                        
-                        if (settings.formData) {
-                            localStorage.setItem('motodiag_form_data', settings.formData);
-                        }
-                        
-                        if (Array.isArray(settings.reports)) {
-                            this.state.reportsDatabase = settings.reports;
-                            localStorage.setItem('motodiag_reports', JSON.stringify(settings.reports));
-                        }
-                        
-                        if (Array.isArray(settings.inspections)) {
-                            this.state.inspectionsDatabase = settings.inspections;
-                            localStorage.setItem('motodiag_inspections', JSON.stringify(settings.inspections));
-                        }
-                        
-                        this.showToast('Настройки успешно импортированы', 'success');
-                        this.loadFormData();
-                        this.loadReportsList();
-                        this.loadInspectionsList();
-                        this.updateStatistics();
-                        
-                    } catch (error) {
-                        this.showToast('Ошибка при импорте настроек: неверный формат файла', 'warning');
-                    }
-                };
-                
-                reader.readAsText(file);
-            }
-        };
-        
-        input.click();
-    },
-    
-    clearAllData() {
-        if (!confirm('ВНИМАНИЕ! Это действие удалит ВСЕ данные приложения без возможности восстановления. Продолжить?')) {
-            return;
-        }
-        
-        if (!confirm('Вы уверены? Это действие нельзя отменить.')) {
-            return;
-        }
-        
-        // Очищаем все данные
-        localStorage.removeItem('motodiag_reports');
-        localStorage.removeItem('motodiag_inspections');
-        localStorage.removeItem('motodiag_form_data');
-        localStorage.removeItem('motodiag_theme');
-        
-        this.state.reportsDatabase = [];
-        this.state.inspectionsDatabase = [];
-        
-        // Сбрасываем форму
-        this.clearForm();
-        
-        // Обновляем интерфейс
-        this.loadReportsList();
-        this.loadInspectionsList();
-        this.updateStatistics();
-        
-        this.showToast('Все данные приложения очищены', 'success');
     }
 };
 
@@ -2040,26 +1550,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 const copyStatsBtn = document.getElementById('copyStatsBtn');
                 
                 if (statsOutput) {
-                    const period = document.querySelector('.grid-btn[data-period].active')?.getAttribute('data-period') || 'week';
-                    statsOutput.textContent = `📊 Статистика МотоДиагностики PRO за ${app.getPeriodName(period)}\n\n` +
-                        `Всего отчетов: ${document.getElementById('totalReports')?.textContent || 0}\n` +
-                        `Успешных сделок: ${document.getElementById('successfulDeals')?.textContent || 0}\n` +
-                        `Средняя экономия: ${document.getElementById('avgSavings')?.textContent || '0 ₽'}\n` +
-                        `Популярная марка: ${document.getElementById('popularBrand')?.textContent || '-'}\n\n` +
-                        `📞 Сергей Ландик 8 950 005-05-08\n` +
-                        `🌐 Сайт: motopodbor.ru`;
-                    
+                    statsOutput.textContent = 'Функция генерации поста статистики в разработке';
                     statsOutput.classList.remove('hidden');
                 }
                 
                 if (copyStatsBtn) {
                     copyStatsBtn.classList.remove('hidden');
-                    copyStatsBtn.onclick = () => {
-                        const text = statsOutput.textContent;
-                        navigator.clipboard.writeText(text).then(() => {
-                            app.showToast('Статистика скопирована в буфер обмена!', 'success');
-                        });
-                    };
                 }
             });
         }
