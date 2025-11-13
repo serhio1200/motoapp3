@@ -34,10 +34,6 @@
                 <span class="tab-icon">📊</span>
                 <span class="tab-text">Отчет</span>
             </button>
-            <button class="nav-tab" data-tab="client-report">
-                <span class="tab-icon">📋</span>
-                <span class="tab-text">Отчет клиенту</span>
-            </button>
             <button class="nav-tab" data-tab="inspections">
                 <span class="tab-icon">📅</span>
                 <span class="tab-text">Проверки</span>
@@ -355,94 +351,6 @@
                 <div class="section-title">📄 Сгенерированный отчет</div>
                 <div class="output-container" id="output"></div>
                 <button type="button" class="btn btn-success mt-10 hidden" id="copyBtn">📋 Копировать отчет для соцсетей</button>
-            </div>
-        </div>
-
-        <!-- Вкладка ОТЧЕТ КЛИЕНТУ -->
-        <div id="client-report-tab" class="tab-content">
-            <div class="card">
-                <h2 class="section-title">📋 Профессиональный отчет для клиента</h2>
-                <p style="margin-bottom: 20px; color: var(--text-light);">
-                    Создайте красивый PDF отчет с фотографиями для вашего клиента
-                </p>
-
-                <!-- Загрузка аукционных листов -->
-                <div class="section-title">📄 Аукционные листы и документы</div>
-                <div class="card">
-                    <div class="form-group">
-                        <label for="auction_lot_file">Загрузить аукционный лист (PDF или изображение)</label>
-                        <input type="file" id="auction_lot_file" name="auction_lot_file" 
-                               accept=".pdf,.jpg,.jpeg,.png,.gif" 
-                               data-tooltip="Загрузите аукционный лист в формате PDF или изображение (максимум 10MB)">
-                        <div class="upload-hint">Максимальный размер файла: 10MB. Разрешены PDF, JPG, PNG, GIF</div>
-                    </div>
-                    <div id="auctionLotPreview" class="file-preview hidden"></div>
-                </div>
-
-                <!-- Данные для клиентского отчета -->
-                <div class="section-title">👤 Данные для отчета клиенту</div>
-                <div class="card">
-                    <div class="client-info-grid">
-                        <div class="form-group">
-                            <label for="client_name">Имя клиента</label>
-                            <input type="text" id="client_name" name="client_name" 
-                                   placeholder="Введите имя клиента"
-                                   data-tooltip="Имя клиента для персонализации отчета">
-                        </div>
-                        <div class="form-group">
-                            <label for="client_phone">Телефон клиента</label>
-                            <input type="tel" id="client_phone" name="client_phone" 
-                                   placeholder="+7 (900) 123-45-67"
-                                   data-tooltip="Телефон клиента для связи">
-                        </div>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="client_notes">Дополнительные заметки для клиента</label>
-                        <textarea id="client_notes" name="client_notes" rows="4" 
-                                  placeholder="Дополнительная информация, рекомендации, особенности мотоцикла..."
-                                  data-tooltip="Произвольный текст, который будет включен в отчет для клиента"></textarea>
-                    </div>
-                </div>
-
-                <!-- Загрузка фотографий -->
-                <div class="section-title">📷 Фотографии для отчета</div>
-                <div class="card">
-                    <div class="photos-count-indicator">
-                        <span>Загружено фото: <span id="photoCount">0</span>/100</span>
-                        <button class="clear-photos-btn" onclick="app.clearAllPhotos()" id="clearAllPhotosBtn">
-                            🗑️ Очистить все
-                        </button>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="client_photos">Загрузить фотографии мотоцикла (максимум 100)</label>
-                        <div class="client-photos-upload" onclick="document.getElementById('client_photos').click()">
-                            <div class="upload-icon">📸</div>
-                            <div class="upload-text">Нажмите для загрузки фотографий</div>
-                            <div class="upload-hint">Перетащите файлы сюда или нажмите для выбора</div>
-                            <div class="upload-hint">Максимум 100 фото, каждое до 5MB</div>
-                            <div class="upload-hint">Поддерживаются: JPG, PNG, GIF, WebP</div>
-                        </div>
-                        <input type="file" id="client_photos" name="client_photos" 
-                               accept=".jpg,.jpeg,.png,.gif,.webp" multiple 
-                               style="display: none;"
-                               data-tooltip="Загрузите до 100 фотографий мотоцикла для включения в отчет">
-                    </div>
-                    <div id="clientPhotosPreview" class="photos-preview"></div>
-                </div>
-
-                <!-- Кнопка генерации PDF -->
-                <button type="button" class="btn btn-success" id="generatePdfBtn" 
-                        data-tooltip="Сгенерировать красивый PDF отчет с фотографиями для клиента">
-                    📄 Сгенерировать PDF отчет для клиента
-                </button>
-
-                <!-- Предупреждение -->
-                <div class="alert alert-info mt-20">
-                    <strong>💡 Совет:</strong> Для генерации отчета сначала заполните основную информацию во вкладке "Отчет", 
-                    затем загрузите фотографии и нажмите кнопку выше. Отчет откроется в новом окне для печати или сохранения как PDF.
-                </div>
             </div>
         </div>
 
