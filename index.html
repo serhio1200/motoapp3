@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>Мото-Диагностика PRO - Профессиональный подбор мотоциклов</title>
+    <title>МотоДиагностика PRO - Профессиональный подбор мотоциклов</title>
     
     <!-- PWA мета-теги -->
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -16,8 +16,968 @@
     <!-- Apple Touch Icon -->
     <link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTkyIiBoZWlnaHQ9IjE5MiIgdmlld0JveD0iMCAwIDE5MiAxOTIiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIxOTIiIGhlaWdodD0iMTkyIiByeD0iMjQiIGZpbGw9IiM2MzY2RjEiLz4KPHN2ZyB4PSI0OCIgeT0iNDgiIHdpZHRoPSI5NiIgaGVpZ2h0PSI5NiIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJ3aGl0ZSI+CjxwYXRoIGQ9Ik0xMiAxMk0xMiA2TDEyIDE4TTYgMTJIMThaIiBzdHJva2U9IndoaXRlIiBzdHJva2Utd2lkdGg9IjIiLz4KPC9zdmc+Cjwvc3ZnPgo=">
     
-    <!-- Подключение CSS -->
-    <link rel="stylesheet" href="style.css">
+    <style>
+        /* style.css - Внешний вид приложения МотоДиагностика PRO */
+
+        /* Переменные цветов для светлой и темной темы */
+        :root {
+            --primary-color: #6366F1;
+            --primary-dark: #4F46E5;
+            --secondary-color: #10B981;
+            --danger-color: #EF4444;
+            --warning-color: #F59E0B;
+            --success-color: #10B981;
+            --text-color: #1F2937;
+            --text-light: #6B7280;
+            --bg-color: #F9FAFB;
+            --card-bg: #ffffff;
+            --border-color: #E5E7EB;
+            --shadow: 0 4px 20px rgba(0,0,0,0.08);
+            --shadow-hover: 0 8px 30px rgba(0,0,0,0.12);
+            --safe-area-inset-bottom: env(safe-area-inset-bottom, 0px);
+            --safe-area-inset-top: env(safe-area-inset-top, 0px);
+        }
+
+        [data-theme="dark"] {
+            --primary-color: #818CF8;
+            --primary-dark: #6366F1;
+            --secondary-color: #34D399;
+            --danger-color: #F87171;
+            --warning-color: #FBBF24;
+            --success-color: #34D399;
+            --text-color: #F9FAFB;
+            --text-light: #D1D5DB;
+            --bg-color: #111827;
+            --card-bg: #1F2937;
+            --border-color: #374151;
+            --shadow: 0 4px 20px rgba(0,0,0,0.25);
+            --shadow-hover: 0 8px 30px rgba(0,0,0,0.35);
+        }
+
+        /* Базовые стили */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            min-height: 100vh;
+            padding: 0;
+            margin: 0;
+            transition: background-color 0.3s ease, color 0.3s ease;
+            padding-bottom: var(--safe-area-inset-bottom);
+            padding-top: var(--safe-area-inset-top);
+        }
+
+        .app-container {
+            max-width: 100%;
+            margin: 0 auto;
+            background: var(--bg-color);
+            min-height: 100vh;
+            position: relative;
+        }
+
+        .app-header {
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+            color: white;
+            padding: 20px 16px;
+            text-align: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+            padding-top: calc(20px + var(--safe-area-inset-top));
+        }
+
+        .app-header h1 {
+            font-size: 1.5rem;
+            margin-bottom: 6px;
+            font-weight: 700;
+            letter-spacing: -0.025em;
+        }
+
+        .app-header p {
+            opacity: 0.9;
+            font-size: 0.9rem;
+            font-weight: 400;
+        }
+
+        /* Навигация */
+        .nav-tabs {
+            display: flex;
+            background: var(--card-bg);
+            border-bottom: 1px solid var(--border-color);
+            position: sticky;
+            top: 0;
+            z-index: 99;
+            padding: 0 4px;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: none;
+        }
+
+        .nav-tabs::-webkit-scrollbar { display: none; }
+
+        .nav-tab {
+            flex: 1;
+            min-width: 70px;
+            background: none;
+            border: none;
+            padding: 14px 6px;
+            text-align: center;
+            font-weight: 600;
+            font-size: 0.7rem;
+            color: var(--text-light);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-bottom: 3px solid transparent;
+            border-radius: 0;
+            margin: 0 1px;
+            white-space: nowrap;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .nav-tab.active {
+            color: var(--primary-color);
+            border-bottom-color: var(--primary-color);
+            background: rgba(99, 102, 241, 0.05);
+        }
+
+        .nav-tab:active { background: rgba(99, 102, 241, 0.1); transform: scale(0.98); }
+
+        .nav-tab .tab-icon { font-size: 1.1rem; margin-bottom: 2px; }
+        .nav-tab .tab-text { font-size: 0.65rem; line-height: 1.2; }
+
+        /* Контент вкладок */
+        .tab-content {
+            display: none;
+            padding: 20px 16px;
+            animation: fadeIn 0.4s ease;
+            padding-bottom: calc(20px + var(--safe-area-inset-bottom));
+        }
+        .tab-content.active { display: block; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Карточки */
+        .card {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border-color);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .card:hover { box-shadow: var(--shadow-hover); }
+        .card:active { transform: scale(0.995); }
+
+        .section-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-bottom: 16px;
+            color: var(--primary-color);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            letter-spacing: -0.025em;
+        }
+
+        /* Формы */
+        .form-group { margin-bottom: 20px; }
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--text-color);
+            font-size: 0.9rem;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 14px;
+            border: 2px solid var(--border-color);
+            border-radius: 12px;
+            font-size: 16px;
+            background: var(--card-bg);
+            color: var(--text-color);
+            transition: all 0.3s ease;
+            font-family: inherit;
+            -webkit-appearance: none;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            border-color: var(--primary-color);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+            transform: translateY(-2px);
+        }
+
+        /* Стили для двойного поля пробега */
+        .mileage-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .mileage-input-group {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .mileage-input-group input {
+            width: 100%;
+            padding: 14px;
+            border: 2px solid var(--border-color);
+            border-radius: 12px;
+            font-size: 16px;
+            background: var(--card-bg);
+            color: var(--text-color);
+            transition: all 0.3s ease;
+        }
+
+        .mileage-input-group input:focus {
+            border-color: var(--primary-color);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+
+        .mileage-label {
+            font-size: 0.75rem;
+            color: var(--text-light);
+            text-align: center;
+            font-weight: 500;
+        }
+
+        .mileage-separator {
+            color: var(--primary-color);
+            font-size: 1.2rem;
+            font-weight: bold;
+            padding: 0 8px;
+        }
+
+        @media (max-width: 480px) {
+            .mileage-row {
+                flex-direction: column;
+                gap: 8px;
+            }
+            
+            .mileage-separator {
+                transform: rotate(90deg);
+                padding: 4px 0;
+            }
+        }
+
+        /* Кнопки */
+        .btn {
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+            color: white;
+            border: none;
+            border-radius: 12px;
+            padding: 16px 20px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+            display: block;
+            width: 100%;
+            position: relative;
+            overflow: hidden;
+        }
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0; left: -100%;
+            width: 100%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s;
+        }
+        .btn:hover::before { left: 100%; }
+        .btn:active { transform: scale(0.98); }
+        .btn-secondary { background: linear-gradient(135deg, var(--secondary-color), #059669); }
+        .btn-warning { background: linear-gradient(135deg, var(--warning-color), #D97706); }
+        .btn-danger { background: linear-gradient(135deg, var(--danger-color), #DC2626); }
+        .btn-success { background: linear-gradient(135deg, var(--success-color), #059669); }
+
+        /* Индикатор прогресса */
+        .progress-container { margin: 20px 0; }
+        .progress-bar {
+            height: 8px; background: var(--border-color);
+            border-radius: 4px; overflow: hidden; margin-bottom: 10px;
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+            width: 0%; transition: width 0.7s cubic-bezier(0.34, 1.56, 0.64, 1);
+            border-radius: 4px; position: relative; overflow: hidden;
+        }
+        .progress-fill::after {
+            content: ''; position: absolute; top: 0; left: -100%;
+            width: 100%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+            animation: shimmer 2s infinite;
+        }
+        @keyframes shimmer { 0% { left: -100%; } 100% { left: 100%; } }
+
+        .progress-text { text-align: center; font-size: 0.8rem; color: var(--text-light); font-weight: 500; }
+
+        /* Сообщения */
+        .alert {
+            padding: 16px; border-radius: 12px; margin: 16px 0; font-weight: 500;
+            animation: slideIn 0.4s ease; border-left: 4px solid;
+        }
+        @keyframes slideIn { from { opacity: 0; transform: translateX(-20px);} to { opacity: 1; transform: translateX(0);} }
+        .alert-success { background: rgba(16,185,129,0.1); color: var(--success-color); border-left-color: var(--success-color); }
+        .alert-info { background: rgba(99,102,241,0.1); color: var(--primary-color); border-left-color: var(--primary-color); }
+        .alert-warning { background: rgba(245,158,11,0.1); color: var(--warning-color); border-left-color: var(--warning-color); }
+
+        /* Вывод отчета */
+        .output-container {
+            background: var(--card-bg); border-radius: 12px; padding: 20px; margin-top: 20px;
+            border: 1px solid var(--border-color); white-space: pre-wrap;
+            font-family: 'JetBrains Mono','Fira Code', monospace; font-size: 0.85rem; line-height: 1.6;
+            max-height: 400px; overflow-y: auto; transition: all 0.3s ease;
+        }
+        .output-container:focus { border-color: var(--primary-color); box-shadow: 0 0 0 3px rgba(99,102,241,0.1); }
+
+        /* База данных */
+        .search-box { position: relative; margin-bottom: 20px; }
+        .search-box input { padding-left: 44px; }
+        .search-icon {
+            position: absolute; left: 14px; top: 50%; transform: translateY(-50%);
+            color: var(--text-light); z-index: 2;
+        }
+        .reports-list { max-height: 500px; overflow-y: auto; }
+        .report-item {
+            background: var(--card-bg); border-radius: 14px; padding: 16px; margin-bottom: 10px;
+            border: 1px solid var(--border-color); transition: all 0.3s ease; cursor: pointer;
+        }
+        .report-item:hover { transform: translateY(-3px); box-shadow: var(--shadow-hover); }
+        .report-item:active { transform: scale(0.99); }
+        .report-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .report-title { font-weight: 700; font-size: 1rem; color: var(--text-color); }
+        .report-meta { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 0.8rem; color: var(--text-light); }
+        .report-actions { display: flex; gap: 6px; }
+        .action-btn { padding: 6px 10px; border: none; border-radius: 8px; font-size: 0.75rem; cursor: pointer; transition: all 0.3s ease; font-weight: 600; }
+
+        /* Статистика */
+        .stats-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin: 20px 0; }
+        .stat-card {
+            background: var(--card-bg); border-radius: 14px; padding: 16px; text-align: center;
+            box-shadow: var(--shadow); border: 1px solid var(--border-color); transition: all 0.3s ease;
+        }
+        .stat-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-hover); }
+        .stat-value { font-size: 1.5rem; font-weight: 800; color: var(--primary-color); margin: 6px 0; letter-spacing: -0.025em; }
+        .stat-label { font-size: 0.8rem; color: var(--text-light); font-weight: 500; }
+
+        /* Grid buttons */
+        .grid-buttons { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin: 16px 0; }
+        .grid-btn {
+            background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 8px;
+            padding: 8px 4px; font-size: 0.75rem; cursor: pointer; transition: all 0.3s ease;
+        }
+        .grid-btn.active { background: var(--primary-color); color: white; border-color: var(--primary-color); }
+
+        /* Адаптивность */
+        @media (max-width: 768px) {
+            .form-row { grid-template-columns: 1fr; }
+            .nav-tab { font-size: 0.65rem; padding: 12px 4px; }
+            .nav-tab .tab-icon { font-size: 1rem; }
+            .stats-grid { grid-template-columns: 1fr; }
+            .tab-content { padding: 16px 12px; }
+            .card { padding: 16px; border-radius: 14px; }
+            .app-header { padding: 16px 12px; padding-top: calc(16px + var(--safe-area-inset-top)); }
+            .app-header h1 { font-size: 1.3rem; }
+            .section-title { font-size: 1rem; }
+            .btn { padding: 14px 16px; font-size: 0.95rem; }
+        }
+        @media (max-width: 480px) {
+            .app-header h1 { font-size: 1.2rem; }
+            .nav-tab .tab-text { font-size: 0.6rem; }
+        }
+        @media (max-width: 380px) {
+            .nav-tabs { padding: 0 2px; }
+            .nav-tab { min-width: 60px; padding: 8px 1px; }
+            .nav-tab .tab-icon { font-size: 0.9rem; }
+            .nav-tab .tab-text { font-size: 0.55rem; }
+        }
+
+        /* Утилиты */
+        .text-center { text-align: center; }
+        .mt-10 { margin-top: 10px; }
+        .mt-20 { margin-top: 20px; }
+        .mb-10 { margin-bottom: 10px; }
+        .mb-20 { margin-bottom: 20px; }
+        .hidden { display: none !important; }
+        .flex { display: flex; }
+        .items-center { align-items: center; }
+        .justify-between { justify-content: space-between; }
+        .gap-10 { gap: 10px; }
+
+        /* Кнопка "Наверх" */
+        .scroll-to-top {
+            position: fixed; bottom: 80px; right: 16px; width: 50px; height: 50px; border-radius: 50%;
+            background: var(--primary-color); color: white; border: none; font-size: 20px; cursor: pointer;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15); display: none; z-index: 1000; transition: all 0.3s ease;
+            align-items: center; justify-content: center;
+        }
+        .scroll-to-top.visible { display: flex; }
+        .scroll-to-top:active { transform: scale(0.95); }
+
+        /* Переключатель темы в шапке */
+        .theme-toggle-header {
+            position: absolute; right: 16px; top: 50%; transform: translateY(-50%);
+            background: rgba(255,255,255,0.2); border: none; border-radius: 50%;
+            width: 40px; height: 40px; color: white; cursor: pointer; display: flex; align-items: center; justify-content: center;
+            font-size: 1.1rem; transition: all 0.3s ease;
+        }
+        .theme-toggle-header:active { transform: translateY(-50%) scale(0.9); }
+
+        /* Настройки */
+        .settings-group { margin-bottom: 24px; }
+        .settings-label { font-weight: 600; margin-bottom: 10px; color: var(--text-color); font-size: 0.95rem; }
+        .settings-description { font-size: 0.8rem; color: var(--text-light); margin-bottom: 14px; }
+        .toggle-switch { position: relative; display: inline-block; width: 50px; height: 26px; }
+        .toggle-switch input { opacity: 0; width: 0; height: 0; }
+        .toggle-slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background: var(--border-color); transition: .4s; border-radius: 34px; }
+        .toggle-slider:before { position: absolute; content: ""; height: 20px; width: 20px; left: 3px; bottom: 3px; background: white; transition: .4s; border-radius: 50%; }
+        input:checked + .toggle-slider { background: var(--primary-color); }
+        input:checked + .toggle-slider:before { transform: translateX(24px); }
+        .toggle-container { display: flex; justify-content: space-between; align-items: center; padding: 14px 0; border-bottom: 1px solid var(--border-color); }
+        .toggle-label { font-weight: 500; color: var(--text-color); }
+
+        /* Проверки */
+        .inspection-fields {
+            background: rgba(99, 102, 241, 0.05); border-radius: 12px; padding: 16px; margin-top: 14px; border: 2px dashed var(--primary-color);
+        }
+        .inspection-item {
+            background: var(--card-bg); border-radius: 12px; padding: 16px; margin-bottom: 14px;
+            border: 1px solid var(--border-color); transition: all 0.3s ease; position: relative;
+        }
+        .inspection-item.urgent { border-left: 4px solid var(--warning-color); }
+        .inspection-item.completed { opacity: 0.7; background: rgba(16, 185, 129, 0.05); }
+        .inspection-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
+        .inspection-title { font-weight: 700; font-size: 1rem; color: var(--text-color); }
+        .inspection-date {
+            font-size: 0.85rem; color: var(--text-light); background: var(--primary-color); color: white;
+            padding: 4px 8px; border-radius: 16px; font-weight: 600;
+        }
+        .inspection-details { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 0.8rem; margin-bottom: 14px; }
+        .inspection-actions { display: flex; gap: 6px; }
+        .badge { display: inline-block; padding: 4px 8px; border-radius: 10px; font-size: 0.7rem; font-weight: 600; margin-right: 6px; margin-bottom: 6px; }
+        .badge-warning { background: rgba(245,158,11,0.1); color: var(--warning-color); }
+        .badge-success { background: rgba(16,185,129,0.1); color: var(--success-color); }
+        .badge-info { background: rgba(99,102,241,0.1); color: var(--primary-color); }
+
+        /* Анимации */
+        .pulse { animation: pulse 2s infinite; }
+        @keyframes pulse { 0%{ transform: scale(1);} 50%{ transform: scale(1.05);} 100%{ transform: scale(1);} }
+        .shake { animation: shake 0.5s; }
+        @keyframes shake { 0%,100%{ transform: translateX(0);} 25%{ transform: translateX(-6px);} 75%{ transform: translateX(6px);} }
+
+        /* iPhone safe areas */
+        @supports(padding: max(0px)) {
+            .app-header, .tab-content, .nav-tabs {
+                padding-left: max(16px, env(safe-area-inset-left));
+                padding-right: max(16px, env(safe-area-inset-right));
+            }
+            .scroll-to-top {
+                right: max(16px, env(safe-area-inset-right));
+                bottom: max(80px, calc(80px + env(safe-area-inset-bottom)));
+            }
+        }
+
+        /* Модальное окно отчёта */
+        .modal { 
+            position: fixed; 
+            top:0; left:0; 
+            width:100%; height:100%; 
+            background: rgba(0,0,0,0.7); 
+            display:flex; 
+            align-items:center; 
+            justify-content:center; 
+            z-index:10000; 
+            padding:20px; 
+        }
+        .modal.hidden { display: none; }
+        .modal-content {
+            background: var(--card-bg); 
+            border-radius: 20px; 
+            width: 100%; 
+            max-width: 600px; 
+            max-height: 90vh; 
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3); 
+            animation: modalSlideIn 0.3s ease;
+        }
+        @keyframes modalSlideIn { 
+            from { opacity:0; transform: translateY(-50px) scale(0.9);} 
+            to { opacity:1; transform: translateY(0) scale(1);} 
+        }
+        .modal-header { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            padding: 20px; 
+            border-bottom: 1px solid var(--border-color); 
+            background: var(--primary-color); 
+            color: white; 
+        }
+        .modal-header h3 { margin:0; font-size:1.2rem; }
+        .modal-close { 
+            background:none; 
+            border:none; 
+            color:white; 
+            font-size:24px; 
+            cursor:pointer; 
+            width:30px; 
+            height:30px; 
+            display:flex; 
+            align-items:center; 
+            justify-content:center; 
+        }
+        .modal-body { padding:20px; max-height:60vh; overflow-y:auto; }
+        .modal-actions { padding:20px; border-top:1px solid var(--border-color); display:flex; gap:10px; }
+
+        .report-identifiers { 
+            background: rgba(99,102,241,0.05); 
+            border-radius:12px; 
+            padding:16px; 
+            margin-bottom:16px; 
+            border:2px solid var(--primary-color); 
+        }
+        .identifier-item { 
+            display:flex; 
+            justify-content:space-between; 
+            margin-bottom:8px; 
+            padding:8px 0; 
+            border-bottom:1px solid var(--border-color); 
+        }
+        .identifier-item:last-child { margin-bottom:0; border-bottom:none; }
+
+        /* Toast - обновленные стили для расширенных уведомлений */
+        #toastContainer {
+            position: fixed;
+            bottom: calc(20px + var(--safe-area-inset-bottom));
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 10001;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            pointer-events: none;
+            max-width: 90vw;
+            width: 400px;
+        }
+
+        .toast {
+            pointer-events: all;
+            background: var(--card-bg);
+            color: var(--text-color);
+            border: 1px solid var(--border-color);
+            border-left: 4px solid var(--primary-color);
+            border-radius: 12px;
+            padding: 16px;
+            box-shadow: var(--shadow-hover);
+            opacity: 0;
+            transform: translateY(6px);
+            transition: all .3s ease;
+            font-weight: 500;
+            max-width: 100%;
+            word-wrap: break-word;
+        }
+
+        .toast.show { 
+            opacity: 1; 
+            transform: translateY(0); 
+        }
+
+        .toast-success { border-left-color: var(--success-color); }
+        .toast-info { border-left-color: var(--primary-color); }
+        .toast-warning { border-left-color: var(--warning-color); }
+
+        /* Расширенные toast для подсказок */
+        .toast-enhanced {
+            max-width: 400px;
+            text-align: left;
+        }
+
+        .toast-title {
+            font-weight: 700;
+            font-size: 1rem;
+            margin-bottom: 8px;
+            color: var(--primary-color);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .toast-description {
+            font-size: 0.9rem;
+            line-height: 1.4;
+            margin-bottom: 8px;
+            color: var(--text-color);
+        }
+
+        .toast-examples {
+            font-size: 0.85rem;
+            color: var(--text-light);
+            font-style: italic;
+            border-top: 1px solid var(--border-color);
+            padding-top: 8px;
+            margin-top: 8px;
+        }
+
+        .toast-examples strong {
+            color: var(--text-color);
+            font-weight: 600;
+        }
+
+        /* Индикатор сохранения */
+        .save-indicator {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: var(--success-color);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            z-index: 10002;
+            opacity: 0;
+            transform: translateY(-10px);
+            transition: all 0.3s ease;
+        }
+        .save-indicator.visible { opacity: 1; transform: translateY(0); }
+
+        /* Tooltip */
+        .tooltip {
+            position: fixed;
+            background: var(--card-bg);
+            color: var(--text-color);
+            padding: 12px 16px;
+            border-radius: 8px;
+            box-shadow: var(--shadow-hover);
+            border: 1px solid var(--border-color);
+            max-width: 300px;
+            font-size: 0.8rem;
+            line-height: 1.4;
+            z-index: 10003;
+            pointer-events: none;
+        }
+
+        /* Конвертер пробега */
+        .mileage-conversion {
+            font-size: 0.75rem;
+            color: var(--text-light);
+            margin-top: 4px;
+            font-style: italic;
+        }
+
+        @media (max-width: 480px) {
+            #toastContainer {
+                width: 95vw;
+                max-width: 95vw;
+            }
+            
+            .toast {
+                padding: 14px;
+            }
+            
+            .toast-enhanced {
+                max-width: 100%;
+            }
+        }
+
+        /* Анимация пульсации для полей с ошибками */
+        @keyframes errorPulse {
+            0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+        }
+
+        .pulse {
+            animation: errorPulse 1.5s infinite;
+        }
+
+        /* Улучшаем видимость ошибочных полей */
+        input:invalid, select:invalid {
+            border-color: var(--danger-color) !important;
+        }
+
+        /* Стиль для обязательных полей */
+        .required-field::after {
+            content: " *";
+            color: var(--danger-color);
+        }
+
+        /* Новые стили для улучшенного UI */
+        .action-btn-small {
+            padding: 4px 8px;
+            font-size: 0.7rem;
+            border-radius: 6px;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            margin-left: 8px;
+        }
+
+        .status-planned {
+            background: rgba(99, 102, 241, 0.1);
+            color: var(--primary-color);
+        }
+
+        .status-completed {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--success-color);
+        }
+
+        .status-cancelled {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--danger-color);
+        }
+
+        .inspection-notes {
+            font-size: 0.8rem;
+            color: var(--text-light);
+            margin-top: 8px;
+            padding-top: 8px;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--text-light);
+        }
+
+        .empty-state-icon {
+            font-size: 3rem;
+            margin-bottom: 16px;
+            opacity: 0.5;
+        }
+
+        .export-options {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 16px;
+        }
+
+        .backup-info {
+            font-size: 0.8rem;
+            color: var(--text-light);
+            margin-top: 8px;
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .file-input-label {
+            display: block;
+            padding: 12px 16px;
+            background: var(--card-bg);
+            border: 2px dashed var(--border-color);
+            border-radius: 12px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .file-input-label:hover {
+            border-color: var(--primary-color);
+            background: rgba(99, 102, 241, 0.05);
+        }
+
+        .inspections-filter {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+
+        .filter-btn {
+            padding: 8px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            background: var(--card-bg);
+            color: var(--text-color);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.8rem;
+        }
+
+        .filter-btn.active {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        .quick-actions {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin: 16px 0;
+        }
+
+        .quick-action-btn {
+            padding: 12px;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .quick-action-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow);
+        }
+
+        .quick-action-icon {
+            font-size: 1.5rem;
+        }
+
+        .quick-action-label {
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .stats-chart {
+            height: 200px;
+            background: var(--card-bg);
+            border-radius: 12px;
+            margin: 16px 0;
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-around;
+            padding: 16px;
+            border: 1px solid var(--border-color);
+        }
+
+        .chart-bar {
+            width: 30px;
+            background: linear-gradient(to top, var(--primary-color), var(--secondary-color));
+            border-radius: 4px 4px 0 0;
+            position: relative;
+            transition: height 0.5s ease;
+        }
+
+        .chart-label {
+            position: absolute;
+            bottom: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 0.7rem;
+            color: var(--text-light);
+            white-space: nowrap;
+        }
+
+        .chart-value {
+            position: absolute;
+            top: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: var(--text-color);
+        }
+
+        .enhanced-report {
+            line-height: 1.6;
+        }
+
+        .report-section {
+            margin-bottom: 16px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .report-section:last-child {
+            border-bottom: none;
+        }
+
+        .report-highlight {
+            background: rgba(99, 102, 241, 0.1);
+            padding: 8px 12px;
+            border-radius: 8px;
+            margin: 8px 0;
+            border-left: 3px solid var(--primary-color);
+        }
+
+        .report-warning {
+            background: rgba(245, 158, 11, 0.1);
+            padding: 8px 12px;
+            border-radius: 8px;
+            margin: 8px 0;
+            border-left: 3px solid var(--warning-color);
+        }
+
+        .inspection-reminder {
+            background: rgba(99, 102, 241, 0.05);
+            border-radius: 12px;
+            padding: 16px;
+            margin: 16px 0;
+            border: 2px solid var(--primary-color);
+            animation: pulse 2s infinite;
+        }
+
+        .reminder-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .reminder-title {
+            font-weight: 700;
+            color: var(--primary-color);
+        }
+
+        .reminder-time {
+            font-size: 0.8rem;
+            color: var(--text-light);
+        }
+
+        .reminder-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 12px;
+        }
+    </style>
 </head>
 <body>
     <div class="app-container">
@@ -69,13 +1029,33 @@
                 <div class="alert alert-success hidden" id="successAlert"></div>
                 <div class="alert alert-info hidden" id="savingsAlert"></div>
 
+                <!-- Быстрые действия -->
+                <div class="quick-actions">
+                    <div class="quick-action-btn" id="quickTemplate1">
+                        <span class="quick-action-icon">🏍️</span>
+                        <span class="quick-action-label">Спортивный мотоцикл</span>
+                    </div>
+                    <div class="quick-action-btn" id="quickTemplate2">
+                        <span class="quick-action-icon">🛵</span>
+                        <span class="quick-action-label">Городской мотоцикл</span>
+                    </div>
+                    <div class="quick-action-btn" id="quickTemplate3">
+                        <span class="quick-action-icon">🗺️</span>
+                        <span class="quick-action-label">Туристический</span>
+                    </div>
+                    <div class="quick-action-btn" id="quickTemplate4">
+                        <span class="quick-action-icon">⚡</span>
+                        <span class="quick-action-label">Электрический</span>
+                    </div>
+                </div>
+
                 <form id="diagnosticForm">
                     <!-- Основные данные -->
                     <div class="section-title">📋 Основные данные</div>
                     <div class="card">
                         <div class="form-row">
                             <div class="form-group">
-                                <label for="brand">Марка мотоцикла</label>
+                                <label for="brand" class="required-field">Марка мотоцикла</label>
                                 <select id="brand" name="brand" required data-tooltip="Выберите марку мотоцикла из списка или выберите 'Другая марка' для ввода вручную">
                                     <option value="">-- Выберите марку --</option>
                                     <option value="Honda">Honda</option>
@@ -93,7 +1073,7 @@
                             </div>
 
                             <div class="form-group">
-                                <label for="model">Модель</label>
+                                <label for="model" class="required-field">Модель</label>
                                 <select id="model" name="model" required data-tooltip="Выберите модель мотоцикла из списка или выберите 'Другая модель' для ввода вручную">
                                     <option value="">-- Сначала выберите марку --</option>
                                 </select>
@@ -103,7 +1083,7 @@
 
                         <div class="form-row">
                             <div class="form-group">
-                                <label for="year">Год выпуска</label>
+                                <label for="year" class="required-field">Год выпуска</label>
                                 <input type="number" id="year" name="year" placeholder="2023" min="1990" max="2030" required>
                             </div>
 
@@ -120,6 +1100,7 @@
                                         <span class="mileage-label">тыс. миль</span>
                                     </div>
                                 </div>
+                                <div class="mileage-conversion" id="mileageConversion"></div>
                             </div>
                         </div>
 
@@ -302,24 +1283,24 @@
                             
                             <div class="form-row">
                                 <div class="form-group">
-                                    <label for="inspection_date">Дата проверки</label>
+                                    <label for="inspection_date" class="required-field">Дата проверки</label>
                                     <input type="date" id="inspection_date" name="inspection_date" data-tooltip="Дата, на которую запланирована проверка мотоцикла">
                                 </div>
 
                                 <div class="form-group">
-                                    <label for="inspection_time">Время проверки</label>
+                                    <label for="inspection_time" class="required-field">Время проверки</label>
                                     <input type="time" id="inspection_time" name="inspection_time" data-tooltip="Время, на которое запланирована проверка">
                                 </div>
                             </div>
 
                             <div class="form-group">
-                                <label for="inspection_address">Адрес проверки</label>
+                                <label for="inspection_address" class="required-field">Адрес проверки</label>
                                 <input type="text" id="inspection_address" name="inspection_address" placeholder="г. Москва, ул. Примерная, д. 1" data-tooltip="Точный адрес, где будет проводиться осмотр мотоцикла">
                             </div>
 
                             <div class="form-row">
                                 <div class="form-group">
-                                    <label for="customer_phone">Телефон заказчика</label>
+                                    <label for="customer_phone" class="required-field">Телефон заказчика</label>
                                     <input type="tel" id="customer_phone" name="customer_phone" placeholder="+7 (900) 123-45-67" data-tooltip="Контактный телефон клиента, который заказал проверку">
                                 </div>
 
@@ -349,7 +1330,7 @@
             <!-- Вывод отчета -->
             <div class="card hidden" id="outputCard">
                 <div class="section-title">📄 Сгенерированный отчет</div>
-                <div class="output-container" id="output"></div>
+                <div class="output-container enhanced-report" id="output"></div>
                 <button type="button" class="btn btn-success mt-10 hidden" id="copyBtn">📋 Копировать отчет для соцсетей</button>
             </div>
         </div>
@@ -358,15 +1339,45 @@
         <div id="inspections-tab" class="tab-content">
             <div class="card">
                 <h2 class="section-title">📅 Запланированные проверки</h2>
+                
+                <!-- Фильтры проверок -->
+                <div class="inspections-filter">
+                    <button class="filter-btn active" data-filter="all">Все</button>
+                    <button class="filter-btn" data-filter="planned">Запланированные</button>
+                    <button class="filter-btn" data-filter="completed">Выполненные</button>
+                    <button class="filter-btn" data-filter="today">Сегодня</button>
+                </div>
+                
                 <div class="search-box">
                     <span class="search-icon">🔍</span>
                     <input type="text" id="searchInspections" placeholder="Поиск по марке, модели или адресу..." data-tooltip="Поиск по всем запланированным проверкам">
                 </div>
+                
                 <div class="form-row">
                     <button class="btn btn-secondary" id="exportInspectionsBtn" data-tooltip="Экспортировать список проверок в файл">📤 Экспорт проверок</button>
                     <button class="btn btn-warning" id="importInspectionsBtn" data-tooltip="Импортировать проверки из файла">📥 Импорт проверок</button>
                 </div>
-                <div class="reports-list" id="inspectionsList"></div>
+                
+                <!-- Напоминания о предстоящих проверках -->
+                <div id="inspectionsReminders" class="inspection-reminder hidden">
+                    <div class="reminder-header">
+                        <div class="reminder-title">⏰ Ближайшая проверка</div>
+                        <div class="reminder-time" id="nextInspectionTime"></div>
+                    </div>
+                    <div id="nextInspectionDetails"></div>
+                    <div class="reminder-actions">
+                        <button class="btn btn-secondary action-btn-small" id="viewNextInspection">Просмотреть</button>
+                        <button class="btn btn-warning action-btn-small" id="postponeInspection">Отложить</button>
+                    </div>
+                </div>
+                
+                <div class="reports-list" id="inspectionsList">
+                    <div class="empty-state">
+                        <div class="empty-state-icon">📅</div>
+                        <div>Нет запланированных проверок</div>
+                        <div class="mt-10" style="font-size: 0.8rem;">Запланируйте проверку на вкладке "Отчет"</div>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -378,11 +1389,33 @@
                     <span class="search-icon">🔍</span>
                     <input type="text" id="searchReports" placeholder="Поиск по марке, модели, VIN или году..." data-tooltip="Поиск по всем сохраненным отчетам">
                 </div>
-                <div class="form-row">
-                    <button class="btn btn-secondary" id="exportBtn" data-tooltip="Экспортировать всю базу отчетов в файл">📤 Экспорт базы</button>
-                    <button class="btn btn-warning" id="importBtn" data-tooltip="Импортировать отчеты из файла">📥 Импорт базы</button>
+                
+                <div class="quick-actions">
+                    <div class="quick-action-btn" id="exportAllReports">
+                        <span class="quick-action-icon">📤</span>
+                        <span class="quick-action-label">Экспорт всех</span>
+                    </div>
+                    <div class="quick-action-btn" id="importReports">
+                        <span class="quick-action-icon">📥</span>
+                        <span class="quick-action-label">Импорт</span>
+                    </div>
+                    <div class="quick-action-btn" id="clearAllReports">
+                        <span class="quick-action-icon">🗑️</span>
+                        <span class="quick-action-label">Очистить базу</span>
+                    </div>
+                    <div class="quick-action-btn" id="generateStatsReport">
+                        <span class="quick-action-icon">📈</span>
+                        <span class="quick-action-label">Статистика</span>
+                    </div>
                 </div>
-                <div class="reports-list" id="reportsList"></div>
+                
+                <div class="reports-list" id="reportsList">
+                    <div class="empty-state">
+                        <div class="empty-state-icon">🗃️</div>
+                        <div>Нет сохраненных отчетов</div>
+                        <div class="mt-10" style="font-size: 0.8rem;">Создайте и сохраните свой первый отчет</div>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -417,6 +1450,38 @@
                     </div>
                 </div>
 
+                <!-- График статистики -->
+                <div class="stats-chart" id="statsChart">
+                    <div class="chart-bar" style="height: 30%">
+                        <div class="chart-value">0</div>
+                        <div class="chart-label">Пн</div>
+                    </div>
+                    <div class="chart-bar" style="height: 50%">
+                        <div class="chart-value">0</div>
+                        <div class="chart-label">Вт</div>
+                    </div>
+                    <div class="chart-bar" style="height: 70%">
+                        <div class="chart-value">0</div>
+                        <div class="chart-label">Ср</div>
+                    </div>
+                    <div class="chart-bar" style="height: 90%">
+                        <div class="chart-value">0</div>
+                        <div class="chart-label">Чт</div>
+                    </div>
+                    <div class="chart-bar" style="height: 60%">
+                        <div class="chart-value">0</div>
+                        <div class="chart-label">Пт</div>
+                    </div>
+                    <div class="chart-bar" style="height: 40%">
+                        <div class="chart-value">0</div>
+                        <div class="chart-label">Сб</div>
+                    </div>
+                    <div class="chart-bar" style="height: 20%">
+                        <div class="chart-value">0</div>
+                        <div class="chart-label">Вс</div>
+                    </div>
+                </div>
+
                 <div class="stats-grid">
                     <div class="stat-card">
                         <div class="stat-label">Запланировано проверок</div>
@@ -425,6 +1490,14 @@
                     <div class="stat-card">
                         <div class="stat-label">Выполнено проверок</div>
                         <div class="stat-value" id="completedInspections">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Средний пробег</div>
+                        <div class="stat-value" id="avgMileage">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Средний год</div>
+                        <div class="stat-value" id="avgYear">0</div>
                     </div>
                 </div>
 
@@ -456,6 +1529,14 @@
                         <span class="toggle-label">Автосохранение</span>
                         <label class="toggle-switch">
                             <input type="checkbox" id="autoSave" checked data-tooltip="Автоматически сохранять данные формы при вводе">
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                    
+                    <div class="toggle-container">
+                        <span class="toggle-label">Компактный режим</span>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="compactMode" data-tooltip="Уменьшить отступы для большего объема информации на экране">
                             <span class="toggle-slider"></span>
                         </label>
                     </div>
@@ -500,9 +1581,15 @@
                     <div class="settings-label">Резервные копии</div>
                     <div class="settings-description">Управление данными приложения</div>
                     
-                    <div class="form-row">
+                    <div class="export-options">
                         <button class="btn btn-secondary" id="exportSettingsBtn" data-tooltip="Экспортировать все настройки и данные приложения">💾 Экспорт настроек</button>
                         <button class="btn btn-warning" id="importSettingsBtn" data-tooltip="Импортировать настройки и данные из файла">📥 Импорт настроек</button>
+                        <button class="btn btn-secondary" id="exportReportsBtn" data-tooltip="Экспортировать только базу отчетов">📊 Экспорт отчетов</button>
+                        <button class="btn btn-warning" id="importReportsSettingsBtn" data-tooltip="Импортировать отчеты из файла">🗃️ Импорт отчетов</button>
+                    </div>
+                    
+                    <div class="backup-info">
+                        Последнее резервное копирование: <span id="lastBackupDate">никогда</span>
                     </div>
                     
                     <button class="btn btn-danger mt-10" id="clearStorageBtn" data-tooltip="Полностью очистить все данные приложения (действие необратимо)">🗑️ Очистить все данные</button>
@@ -512,11 +1599,13 @@
             <div class="card mt-20">
                 <h2 class="section-title">ℹ️ О приложении</h2>
                 <div class="settings-group">
-                    <p><strong>Версия:</strong> 2.4.0 PRO FINAL</p>
+                    <p><strong>Версия:</strong> 2.5.0 PRO FINAL</p>
                     <p><strong>Разработчик:</strong> Сергей Ландик</p>
                     <p><strong>Контакты:</strong> 8 950 005-05-08</p>
                     <p><strong>Сайт:</strong> motopodbor.ru</p>
                     <p><strong>Обновлено:</strong> <span id="appVersionDate">2024</span></p>
+                    <p><strong>Всего отчетов:</strong> <span id="totalReportsCount">0</span></p>
+                    <p><strong>Всего проверок:</strong> <span id="totalInspectionsCount">0</span></p>
                 </div>
                 
                 <button class="btn mt-20" id="installBtn" style="display: none;" data-tooltip="Установить приложение на устройство для работы офлайн">📲 Установить приложение</button>
@@ -541,11 +1630,28 @@
                     <div class="identifier-item"><strong>Гос. номер:</strong> <span id="modalLicensePlate">Не указан</span></div>
                     <div class="identifier-item"><strong>Мотоцикл:</strong> <span id="modalBikeInfo">-</span></div>
                 </div>
-                <div class="output-container modal-output" id="modalOutput"></div>
+                <div class="output-container modal-output enhanced-report" id="modalOutput"></div>
             </div>
             <div class="modal-actions">
                 <button class="btn btn-secondary" id="copyModalReport">📋 Копировать отчет для соцсетей</button>
                 <button class="btn" id="closeModal">Закрыть</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальное окно подтверждения -->
+    <div id="confirmModal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Подтверждение действия</h3>
+                <button class="modal-close" id="confirmModalClose">×</button>
+            </div>
+            <div class="modal-body">
+                <p id="confirmMessage">Вы уверены, что хотите выполнить это действие?</p>
+            </div>
+            <div class="modal-actions">
+                <button class="btn btn-danger" id="confirmAction">Подтвердить</button>
+                <button class="btn btn-secondary" id="cancelAction">Отмена</button>
             </div>
         </div>
     </div>
@@ -555,8 +1661,886 @@
 
     <div id="toastContainer" aria-live="polite" aria-atomic="true"></div>
 
-    <!-- Подключение JavaScript -->
-    <script src="script.js"></script>
-</body>
-</html>
+    <!-- Скрытый input для импорта файлов -->
+    <input type="file" id="fileImportInput" class="file-input" accept=".json,.txt">
+    <input type="file" id="reportsImportInput" class="file-input" accept=".json,.txt">
 
+    <script>
+        // МотоДиагностика PRO - Основная логика приложения (исправленная версия)
+
+        const app = {
+            modules: {},
+            config: {
+                modelsDatabase: {
+                    "Honda": [
+                        "CB125F", "CB300R", "CB500X", "CB650R", "CBR500R", "CBR650R", "CBR1000RR-R Fireblade", 
+                        "CRF300L", "CRF450R", "Africa Twin", "Gold Wing", "Rebel 500", "Rebel 1100", "PCX160", 
+                        "ADV160", "Forza 350", "CT125", "Monkey 125", "Super Cub C125", "NM4 Vultus", "VFR800F"
+                    ],
+                    "Yamaha": [
+                        "MT-07", "MT-09", "MT-10", "MT-15", "MT-125", "YZF-R1", "YZF-R6", "YZF-R7", "YZF-R3", 
+                        "YZF-R125", "XMAX", "TMAX", "Tracer 9", "Tracer 7", "XSR900", "XSR700", "XSR155", 
+                        "Tenere 700", "WR155R", "NMAX", "YZ450F", "YZ250F"
+                    ],
+                    "Kawasaki": [
+                        "Ninja ZX-10R", "Ninja ZX-6R", "Ninja 650", "Ninja 400", "Ninja 300", "Ninja 250", 
+                        "Ninja 125", "Z900", "Z800", "Z650", "Z400", "Z300", "Z250", "Z125", "Versys 650", 
+                        "Versys 300", "Vulcan S", "Vulcan 900", "W800", "KLX230", "KLX140", "KX450", "KX250"
+                    ],
+                    "Suzuki": [
+                        "GSX-R1000", "GSX-R750", "GSX-R600", "GSX-R125", "GSX-S1000", "GSX-S750", "GSX-S125", 
+                        "SV650", "V-Strom 650", "V-Strom 1050", "V-Strom 250", "Hayabusa", "Burgman 400", 
+                        "Burgman 200", "RM-Z450", "RM-Z250"
+                    ],
+                    "BMW": [
+                        "S1000RR", "S1000XR", "S1000R", "R1250GS", "R1250RT", "R1250R", "R1250RS", "F900R", 
+                        "F900XR", "F750GS", "F850GS", "G310R", "G310GS", "C400X", "C400GT", "K1600GT", "K1600B"
+                    ],
+                    "KTM": [
+                        "1290 Super Duke R", "1290 Super Adventure", "790 Duke", "790 Adventure", "390 Duke", 
+                        "390 Adventure", "250 Duke", "125 Duke", "690 Enduro", "690 SMC", "450 EXC", "350 EXC", 
+                        "250 EXC", "Freeride E-XC"
+                    ],
+                    "Ducati": [
+                        "Panigale V4", "Panigale V2", "Streetfighter V4", "Monster", "Scrambler", "Multistrada", 
+                        "Hypermotard", "Diavel", "XDiavel", "SuperSport", "DesertX"
+                    ],
+                    "Triumph": [
+                        "Street Triple", "Speed Triple", "Tiger 900", "Tiger 1200", "Bonneville", "Scrambler", 
+                        "Rocket 3", "Trident", "Daytona", "Thruxton", "Speed Twin"
+                    ],
+                    "Harley-Davidson": [
+                        "Street Glide", "Road Glide", "Sportster", "Fat Boy", "Softail", "Pan America", 
+                        "Low Rider", "Heritage Classic", "Breakout", "CVO", "LiveWire"
+                    ],
+                    "Другая марка": ["Другая модель"]
+                },
+                motorcycleClasses: {
+                    "Спортивные (Sport)": {
+                        description: "Для скорости и резкой езды по асфальту, агрессивная посадка.",
+                        examples: ["Yamaha YZF-R1", "Honda CBR1000RR", "Kawasaki Ninja ZX-10R"]
+                    },
+                    "Голые (Naked)": {
+                        description: "Мотоциклы без обтекателей, с прямой посадкой, для города и активной езды.",
+                        examples: ["Yamaha MT-07", "Kawasaki Z900", "Triumph Street Triple"]
+                    },
+                    "Круизеры / Чопперы": {
+                        description: "Низкая посадка, для неспешной езды по трассе, акцент на стиле.",
+                        examples: ["Harley-Davidson Softail", "Indian Chief", "Yamaha V-Star"]
+                    },
+                    "Туристические (Touring)": {
+                        description: "Максимальный комфорт для дальних поездок, с багажом и защитой.",
+                        examples: ["Honda Gold Wing", "BMW K 1600 GTL", "Harley-Davidson Road Glide"]
+                    },
+                    "Спорт-туризм (Sport-Touring)": {
+                        description: "Гибрид спортивного и туристического, для быстрых и дальних поездок.",
+                        examples: ["Yamaha Tracer 9", "Kawasaki Ninja 1000SX", "BMW S1000XR"]
+                    },
+                    "Классика / Ретро (Classic)": {
+                        description: "Внешний вид в стиле мотоциклов прошлых лет.",
+                        examples: ["Royal Enfield Classic 350", "Triumph Bonneville", "Moto Guzzi V7"]
+                    },
+                    "Кафе-рейсеры (Cafe Racer)": {
+                        description: "Ретро-стиль с спортивными элементами, низким рулем.",
+                        examples: ["Triumph Thruxton", "Ducati Scrambler Cafe Racer", "Norton Commando"]
+                    },
+                    "Мотокросс (Motocross)": {
+                        description: "Для гонок по грунтовым трассам, без фар и поворотников.",
+                        examples: ["KTM 450 SX-F", "Honda CRF450R", "Yamaha YZ450F"]
+                    },
+                    "Эндуро (Enduro)": {
+                        description: "Для езды по бездорожью, но с светотехникой для использования на дорогах.",
+                        examples: ["KTM 500 EXC", "Husqvarna FE 501", "Beta 500 RR-S"]
+                    },
+                    "Трэйл (Trail)": {
+                        description: "Легкие внедорожники для неагрессивного покорения природы.",
+                        examples: ["Honda CRF250L", "Yamaha XT250", "Kawasaki KLX230"]
+                    },
+                    "Эдвенчер (Adventure)": {
+                        description: "Универсальные мотоциклы для асфальта и бездорожья, часто с большим запасом хода.",
+                        examples: ["BMW R1250GS", "KTM 1290 Super Adventure", "Ducati Multistrada"]
+                    },
+                    "Супермото (Supermoto)": {
+                        description: "Внедорожный мотоцикл с дорожной резиной, для агрессивной езды по городу и картодрому.",
+                        examples: ["KTM 690 SMC R", "Husqvarna 701 Supermoto", "Aprilia SXV 550"]
+                    },
+                    "Скутеры (Scooter)": {
+                        description: "Автоматическая коробка передач, удобство для города.",
+                        examples: ["Yamaha XMAX", "Honda PCX", "Vespa GTS"]
+                    },
+                    "Мопеды / Легкие мотоциклы": {
+                        description: "Маленький объем двигателя, для неспешных поездок по городу.",
+                        examples: ["Honda Super Cub", "Yamaha YBR125", "KTM 125 Duke"]
+                    },
+                    "Электрические мотоциклы": {
+                        description: "Тихие и экологичные, с мгновенной тягой.",
+                        examples: ["Zero SR/F", "Energica Ego", "Harley-Davidson LiveWire"]
+                    }
+                },
+                gearboxTypes: {
+                    "Механическая": "Водитель вручную с помощью рычага сцепления (на руле) и педали переключения передач (ножной рычаг). Подавляющее большинство мотоциклов.",
+                    "Автоматическая (DCT / Вариатор)": "Водитель не управляет сцеплением (нет рычага сцепление). Переключение автоматическое или ручное по желанию. Honda DCT, скутеры с вариатором.",
+                    "Полуавтоматическая": "У мотоцикла нет рычага сцепления на руле, но при этом есть педаль или кнопка, как на механической коробке. Старые мопеды, скутеры с педалями."
+                },
+                originCountries: {
+                    "Дилерский ПТС РФ": {
+                        description: "Мотоцикл был новым официально ввезен в Россию дилером (импортером) и продан первому владельцу. Первым и единственным документом на мотоцикл является российский ПТС (Паспорт Транспортного Средства), выданный таможенными органами РФ.",
+                        examples: ["Полная история обслуживания у официального дилера", "Российская гарантия", "Первый владелец в ПТС"]
+                    },
+                    "Япония": {
+                        description: "Мотоциклы для внутреннего японского рынка. Часто имеют ограничение максимальной скорости (~180 км/ч), спидометр только в км/ч, специфичную маркировку (надписи на японском). Могут быть 'экономичные' версии двигателей. Часто оснащены катафотами на вилках.",
+                        examples: ["Спидометр только в км/ч", "Японские надписи на панели", "Катафоты на вилках", "Экономичные версии двигателей"]
+                    },
+                    "Европа": {
+                        description: "Мотоциклы для европейского рынка. Спидометр в км/ч, часто дублируется в милях. Соответствуют строгим экологическим нормам Евро. Комплектации могут быть богаче, чем базовые для других рынков.",
+                        examples: ["Спидометр в км/ч и милях", "Соответствие нормам Евро-4/5", "Богатые комплектации", "Немецкие/итальянские документы"]
+                    },
+                    "США / Аукцион": {
+                        description: "Мотоциклы для североамериканского рынка. Главный отличительный признак — спидометр в милях (большие цифры - mph). Фары могут иметь другой режим работы (горят всегда). Могут быть отличия в настройках двигателя и составе выхлопа.",
+                        examples: ["Спидометр в милях (mph)", "Фары горят постоянно", "Американские настройки двигателя", "Сертификат соответствия EPA"]
+                    },
+                    "Другое": {
+                        description: "Другое происхождение мотоцикла, не подходящее под основные категории.",
+                        examples: ["Канадский рынок", "Австралийский рынок", "Локальные рынки Азии"]
+                    }
+                },
+                auctionTypes: {
+                    "Без аукционного листа": {
+                        description: "Покупка мотоцикла у частного перекупщика или небольшого дилера в стране-экспортере (чаще всего Япония) без предоставления официального отчета о состоянии.",
+                        examples: ["Частный перекупщик в Японии", "Небольшой дилер", "Без официального отчета"]
+                    },
+                    "Аукцион Японии": {
+                        description: "Мотоцикл имеет Аукционный лист — паспорт лота. При выборе данного пункта появляется возможность ввода номера аукционного листа или ссылки на лот.",
+                        examples: ["USS Tokyo", "JU Nagoya", "ARAI", "CAA"]
+                    },
+                    "Аукцион США (битый)": {
+                        description: "Мотоцикл имеет Аукционный лист — паспорт лота. При выборе данного пункта появляется возможность ввода номера аукционного листа или ссылки на лот.",
+                        examples: ["Copart", "IAAI", "Manheim"]
+                    },
+                    "Европейский / дилер": {
+                        description: "Покупка мотоцикла у официального дилера или крупного специализированного салона в Европе (например, в Германии, Польше, Чехии и Швейцарии), а также частных продаж.",
+                        examples: ["Официальный дилер BMW", "Специализированный салон", "Частные продажи в Европе"]
+                    },
+                    "Частник по ДКП": {
+                        description: "Прямая покупка у владельца мотоцикла с оформлением стандартного договора купли-продажи.",
+                        examples: ["Договор купли-продажи", "Прямая сделка с владельцем", "Российский ПТС"]
+                    }
+                },
+                quickTemplates: {
+                    "sport": {
+                        brand: "Yamaha",
+                        model: "YZF-R1",
+                        year: "2022",
+                        motorcycle_class: "Спортивные (Sport)",
+                        gearbox_type: "Механическая"
+                    },
+                    "city": {
+                        brand: "Honda",
+                        model: "CB500X",
+                        year: "2021",
+                        motorcycle_class: "Голые (Naked)",
+                        gearbox_type: "Механическая"
+                    },
+                    "touring": {
+                        brand: "BMW",
+                        model: "R1250GS",
+                        year: "2023",
+                        motorcycle_class: "Эдвенчер (Adventure)",
+                        gearbox_type: "Механическая"
+                    },
+                    "electric": {
+                        brand: "Zero",
+                        model: "SR/F",
+                        year: "2023",
+                        motorcycle_class: "Электрические мотоциклы",
+                        gearbox_type: "Автоматическая (DCT / Вариатор)"
+                    }
+                }
+            },
+            state: {
+                reportsDatabase: [],
+                inspectionsDatabase: [],
+                deferredPrompt: null,
+                notificationTimeouts: [],
+                currentFilter: 'all',
+                confirmCallback: null
+            },
+            init() {
+                try {
+                    // Безопасная загрузка из localStorage
+                    this.state.reportsDatabase = JSON.parse(localStorage.getItem('motodiag_reports') || '[]');
+                    this.state.inspectionsDatabase = JSON.parse(localStorage.getItem('motodiag_inspections') || '[]');
+                    
+                    // Загрузка настроек
+                    this.loadSettings();
+                } catch (e) {
+                    console.warn('Ошибка загрузки данных из localStorage:', e);
+                    this.state.reportsDatabase = [];
+                    this.state.inspectionsDatabase = [];
+                }
+
+                // Инициализация всех модулей с обработкой ошибок
+                Object.entries(this.modules).forEach(([name, module]) => {
+                    try {
+                        if (module.init) module.init();
+                    } catch (e) {
+                        console.error(`Ошибка инициализации модуля ${name}:`, e);
+                        this.showError('Ошибка загрузки модуля: ' + name);
+                    }
+                });
+
+                // Инициализация базовых компонентов
+                this.initBasicComponents();
+                
+                // Service Worker для PWA
+                if ('serviceWorker' in navigator) {
+                    navigator.serviceWorker.register('data:text/javascript,' + encodeURIComponent(`
+                        const CACHE_NAME = 'motodiag-v2.5.0';
+                        const urlsToCache = ['/', '/index.html'];
+                        self.addEventListener('install', event => {
+                            event.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll(urlsToCache)));
+                        });
+                        self.addEventListener('fetch', event => {
+                            event.respondWith(caches.match(event.request).then(response => response || fetch(event.request)));
+                        });
+                    `)).catch(() => console.log('SW registration failed'));
+                }
+
+                const versionDateEl = document.getElementById('appVersionDate');
+                if (versionDateEl) versionDateEl.textContent = new Date().getFullYear();
+                
+                // Обновление счетчиков
+                this.updateCounters();
+                
+                // Проверка напоминаний
+                this.checkReminders();
+                
+                console.log('МотоДиагностика PRO инициализирована');
+            },
+            
+            loadSettings() {
+                // Загрузка настроек из localStorage
+                const settings = JSON.parse(localStorage.getItem('motodiag_settings') || '{}');
+                
+                // Применение настроек темы
+                if (settings.theme) {
+                    document.body.setAttribute('data-theme', settings.theme);
+                    const darkThemeCheckbox = document.getElementById('darkTheme');
+                    if (darkThemeCheckbox) darkThemeCheckbox.checked = settings.theme === 'dark';
+                }
+                
+                // Применение других настроек
+                const settingsIds = ['autoSave', 'soundNotifications', 'vibration', 'inspectionNotifications', 'compactMode'];
+                settingsIds.forEach(id => {
+                    const element = document.getElementById(id);
+                    if (element && settings[id] !== undefined) {
+                        element.checked = settings[id];
+                    }
+                });
+                
+                // Время напоминания
+                const reminderTime = document.getElementById('reminderTime');
+                if (reminderTime && settings.reminderTime) {
+                    reminderTime.value = settings.reminderTime;
+                }
+                
+                // Дата последнего бэкапа
+                const lastBackupDate = document.getElementById('lastBackupDate');
+                if (lastBackupDate && settings.lastBackupDate) {
+                    lastBackupDate.textContent = new Date(settings.lastBackupDate).toLocaleDateString('ru-RU');
+                } else {
+                    lastBackupDate.textContent = 'никогда';
+                }
+            },
+            
+            saveSettings() {
+                const settings = {
+                    theme: document.body.getAttribute('data-theme') || 'light',
+                    autoSave: document.getElementById('autoSave')?.checked || false,
+                    soundNotifications: document.getElementById('soundNotifications')?.checked || false,
+                    vibration: document.getElementById('vibration')?.checked || false,
+                    inspectionNotifications: document.getElementById('inspectionNotifications')?.checked || false,
+                    compactMode: document.getElementById('compactMode')?.checked || false,
+                    reminderTime: document.getElementById('reminderTime')?.value || 2,
+                    lastBackupDate: localStorage.getItem('motodiag_lastBackup') || null
+                };
+                
+                localStorage.setItem('motodiag_settings', JSON.stringify(settings));
+            },
+            
+            updateCounters() {
+                const totalReportsEl = document.getElementById('totalReportsCount');
+                const totalInspectionsEl = document.getElementById('totalInspectionsCount');
+                
+                if (totalReportsEl) totalReportsEl.textContent = this.state.reportsDatabase.length;
+                if (totalInspectionsEl) totalInspectionsEl.textContent = this.state.inspectionsDatabase.length;
+            },
+            
+            checkReminders() {
+                const now = new Date();
+                const upcomingInspections = this.state.inspectionsDatabase.filter(inspection => {
+                    if (inspection.status !== 'planned') return false;
+                    
+                    const inspectionDateTime = new Date(`${inspection.inspection_date}T${inspection.inspection_time}`);
+                    const timeDiff = inspectionDateTime - now;
+                    const hoursDiff = timeDiff / (1000 * 60 * 60);
+                    
+                    return hoursDiff > 0 && hoursDiff <= 24; // Предстоящие в течение 24 часов
+                }).sort((a, b) => {
+                    const aTime = new Date(`${a.inspection_date}T${a.inspection_time}`);
+                    const bTime = new Date(`${b.inspection_date}T${b.inspection_time}`);
+                    return aTime - bTime;
+                });
+                
+                if (upcomingInspections.length > 0) {
+                    const nextInspection = upcomingInspections[0];
+                    this.showInspectionReminder(nextInspection);
+                }
+            },
+            
+            showInspectionReminder(inspection) {
+                const remindersContainer = document.getElementById('inspectionsReminders');
+                const nextInspectionTime = document.getElementById('nextInspectionTime');
+                const nextInspectionDetails = document.getElementById('nextInspectionDetails');
+                
+                if (!remindersContainer || !nextInspectionTime || !nextInspectionDetails) return;
+                
+                const inspectionDateTime = new Date(`${inspection.inspection_date}T${inspection.inspection_time}`);
+                const now = new Date();
+                const timeDiff = inspectionDateTime - now;
+                const hoursDiff = Math.floor(timeDiff / (1000 * 60 * 60));
+                const minutesDiff = Math.floor((timeDiff % (1000 * 60 * 60)) / (1000 * 60));
+                
+                let timeText = '';
+                if (hoursDiff > 0) {
+                    timeText = `Через ${hoursDiff} ч ${minutesDiff} мин`;
+                } else {
+                    timeText = `Через ${minutesDiff} мин`;
+                }
+                
+                nextInspectionTime.textContent = timeText;
+                nextInspectionDetails.textContent = `${inspection.brand} ${inspection.model} - ${inspection.inspection_address}`;
+                
+                remindersContainer.classList.remove('hidden');
+                
+                // Настройка обработчиков для кнопок напоминания
+                const viewNextInspection = document.getElementById('viewNextInspection');
+                const postponeInspection = document.getElementById('postponeInspection');
+                
+                if (viewNextInspection) {
+                    viewNextInspection.onclick = () => {
+                        this.editReport(inspection.reportId);
+                        remindersContainer.classList.add('hidden');
+                    };
+                }
+                
+                if (postponeInspection) {
+                    postponeInspection.onclick = () => {
+                        this.postponeInspection(inspection.id);
+                        remindersContainer.classList.add('hidden');
+                    };
+                }
+            },
+            
+            postponeInspection(inspectionId) {
+                const inspection = this.state.inspectionsDatabase.find(i => i.id === inspectionId);
+                if (!inspection) return;
+                
+                // Перенос на 1 час вперед
+                const inspectionDateTime = new Date(`${inspection.inspection_date}T${inspection.inspection_time}`);
+                inspectionDateTime.setHours(inspectionDateTime.getHours() + 1);
+                
+                inspection.inspection_date = inspectionDateTime.toISOString().split('T')[0];
+                inspection.inspection_time = inspectionDateTime.toTimeString().slice(0, 5);
+                
+                localStorage.setItem('motodiag_inspections', JSON.stringify(this.state.inspectionsDatabase));
+                this.loadInspectionsList();
+                this.showToast('Проверка отложена на 1 час', 'success');
+            },
+            
+            initBasicComponents() {
+                // Инициализация навигации
+                this.initNavigation();
+                
+                // Инициализация темы
+                this.initTheme();
+                
+                // Инициализация формы
+                this.initForm();
+                
+                // Инициализация кнопки "Наверх"
+                this.initScrollToTop();
+                
+                // Инициализация модального окна
+                this.initModal();
+                
+                // Инициализация подсказок
+                this.initTooltips();
+                
+                // Инициализация всплывающих подсказок для классов и коробок
+                this.initEnhancedTooltips();
+                
+                // Инициализация быстрых действий
+                this.initQuickActions();
+                
+                // Инициализация фильтров проверок
+                this.initInspectionFilters();
+                
+                // Инициализация экспорта/импорта
+                this.initExportImport();
+            },
+            
+            initNavigation() {
+                const navTabs = document.querySelectorAll('.nav-tab');
+                const tabContents = document.querySelectorAll('.tab-content');
+                
+                navTabs.forEach(tab => {
+                    tab.addEventListener('click', function() {
+                        const tabId = this.getAttribute('data-tab');
+                        if (!tabId) return;
+                        
+                        navTabs.forEach(t => t.classList.remove('active'));
+                        this.classList.add('active');
+                        
+                        tabContents.forEach(c => {
+                            c.classList.remove('active');
+                            if (c.id === `${tabId}-tab`) {
+                                c.classList.add('active');
+                            }
+                        });
+                        
+                        // Обновление данных при переходе на вкладки
+                        if (tabId === 'database') {
+                            app.loadReportsList();
+                        }
+                        if (tabId === 'inspections') {
+                            app.loadInspectionsList();
+                        }
+                        if (tabId === 'stats') {
+                            app.updateStatistics();
+                        }
+                        if (tabId === 'settings') {
+                            app.updateCounters();
+                        }
+                    });
+                });
+            },
+            
+            initTheme() {
+                const savedTheme = localStorage.getItem('motodiag_theme') || 'light';
+                document.body.setAttribute('data-theme', savedTheme);
+                
+                const darkThemeCheckbox = document.getElementById('darkTheme');
+                if (darkThemeCheckbox) {
+                    darkThemeCheckbox.checked = savedTheme === 'dark';
+                    darkThemeCheckbox.addEventListener('change', this.toggleTheme);
+                }
+                
+                const themeToggleHeader = document.getElementById('themeToggleHeader');
+                if (themeToggleHeader) {
+                    themeToggleHeader.addEventListener('click', this.toggleThemeManual);
+                }
+            },
+            
+            toggleTheme() {
+                const isDark = document.getElementById('darkTheme').checked;
+                const theme = isDark ? 'dark' : 'light';
+                document.body.setAttribute('data-theme', theme);
+                localStorage.setItem('motodiag_theme', theme);
+                this.saveSettings();
+            },
+            
+            toggleThemeManual() {
+                const isDark = document.body.getAttribute('data-theme') === 'dark';
+                const newTheme = isDark ? 'light' : 'dark';
+                document.body.setAttribute('data-theme', newTheme);
+                
+                const darkThemeEl = document.getElementById('darkTheme');
+                if (darkThemeEl) darkThemeEl.checked = !isDark;
+                
+                localStorage.setItem('motodiag_theme', newTheme);
+                this.saveSettings();
+            },
+            
+            initQuickActions() {
+                // Быстрые шаблоны
+                const templateButtons = [
+                    { id: 'quickTemplate1', template: 'sport' },
+                    { id: 'quickTemplate2', template: 'city' },
+                    { id: 'quickTemplate3', template: 'touring' },
+                    { id: 'quickTemplate4', template: 'electric' }
+                ];
+                
+                templateButtons.forEach(btn => {
+                    const element = document.getElementById(btn.id);
+                    if (element) {
+                        element.addEventListener('click', () => {
+                            this.applyQuickTemplate(btn.template);
+                        });
+                    }
+                });
+                
+                // Быстрые действия в базе данных
+                const quickActions = [
+                    { id: 'exportAllReports', action: 'exportAllReports' },
+                    { id: 'importReports', action: 'importReports' },
+                    { id: 'clearAllReports', action: 'clearAllReports' },
+                    { id: 'generateStatsReport', action: 'generateStatsReport' }
+                ];
+                
+                quickActions.forEach(action => {
+                    const element = document.getElementById(action.id);
+                    if (element) {
+                        element.addEventListener('click', () => {
+                            this.handleQuickAction(action.action);
+                        });
+                    }
+                });
+            },
+            
+            applyQuickTemplate(templateKey) {
+                const template = this.config.quickTemplates[templateKey];
+                if (!template) return;
+                
+                Object.keys(template).forEach(key => {
+                    const element = document.getElementById(key);
+                    if (element) {
+                        element.value = template[key];
+                        
+                        // Для выпадающих списков вызываем событие change
+                        if (element.tagName === 'SELECT') {
+                            element.dispatchEvent(new Event('change'));
+                        }
+                    }
+                });
+                
+                this.updateProgress();
+                this.showToast(`Применен шаблон: ${templateKey}`, 'success');
+            },
+            
+            handleQuickAction(action) {
+                switch (action) {
+                    case 'exportAllReports':
+                        this.exportData('reports');
+                        break;
+                    case 'importReports':
+                        document.getElementById('reportsImportInput').click();
+                        break;
+                    case 'clearAllReports':
+                        this.showConfirm('Вы уверены, что хотите очистить всю базу отчетов?', () => {
+                            this.state.reportsDatabase = [];
+                            localStorage.setItem('motodiag_reports', JSON.stringify(this.state.reportsDatabase));
+                            this.loadReportsList();
+                            this.updateCounters();
+                            this.showToast('База отчетов очищена', 'success');
+                        });
+                        break;
+                    case 'generateStatsReport':
+                        this.generateStatsReport();
+                        break;
+                }
+            },
+            
+            initInspectionFilters() {
+                const filterButtons = document.querySelectorAll('.filter-btn');
+                filterButtons.forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const filter = this.getAttribute('data-filter');
+                        if (!filter) return;
+                        
+                        filterButtons.forEach(b => b.classList.remove('active'));
+                        this.classList.add('active');
+                        
+                        app.state.currentFilter = filter;
+                        app.loadInspectionsList();
+                    });
+                });
+            },
+            
+            // Функции для конвертации пробега
+            convertKmToMiles(km) {
+                return (km * 0.621371).toFixed(1);
+            },
+
+            convertMilesToKm(miles) {
+                return (miles / 0.621371).toFixed(1);
+            },
+
+            // Обработчики для полей пробега
+            initMileageFields() {
+                const mileageKm = document.getElementById('mileage_km');
+                const mileageMiles = document.getElementById('mileage_miles');
+                const mileageConversion = document.getElementById('mileageConversion');
+                
+                if (!mileageKm || !mileageMiles) return;
+                
+                const updateConversion = () => {
+                    if (mileageKm.value && !isNaN(parseFloat(mileageKm.value))) {
+                        const miles = this.convertKmToMiles(parseFloat(mileageKm.value));
+                        mileageConversion.textContent = `${mileageKm.value} тыс. км = ${miles} тыс. миль`;
+                    } else if (mileageMiles.value && !isNaN(parseFloat(mileageMiles.value))) {
+                        const km = this.convertMilesToKm(parseFloat(mileageMiles.value));
+                        mileageConversion.textContent = `${mileageMiles.value} тыс. миль = ${km} тыс. км`;
+                    } else {
+                        mileageConversion.textContent = '';
+                    }
+                };
+                
+                // Обработчик для поля км
+                mileageKm.addEventListener('input', () => {
+                    const kmValue = parseFloat(mileageKm.value);
+                    if (!isNaN(kmValue) && kmValue >= 0) {
+                        const milesValue = this.convertKmToMiles(kmValue);
+                        mileageMiles.value = milesValue;
+                    } else {
+                        mileageMiles.value = '';
+                    }
+                    updateConversion();
+                    this.updateProgress();
+                });
+                
+                // Обработчик для поля миль
+                mileageMiles.addEventListener('input', () => {
+                    const milesValue = parseFloat(mileageMiles.value);
+                    if (!isNaN(milesValue) && milesValue >= 0) {
+                        const kmValue = this.convertMilesToKm(milesValue);
+                        mileageKm.value = kmValue;
+                    } else {
+                        mileageKm.value = '';
+                    }
+                    updateConversion();
+                    this.updateProgress();
+                });
+                
+                // Инициализация при загрузке
+                updateConversion();
+            },
+            
+            initForm() {
+                // Заполнение списка моделей при выборе марки
+                const brandSelect = document.getElementById('brand');
+                const modelSelect = document.getElementById('model');
+                
+                if (brandSelect && modelSelect) {
+                    brandSelect.addEventListener('change', function() {
+                        const brand = this.value;
+                        const isCustomBrand = brand === 'Другая марка';
+                        
+                        // Показываем/скрываем поле для ввода кастомной марки
+                        const brandCustom = document.getElementById('brand_custom');
+                        if (brandCustom) {
+                            brandCustom.classList.toggle('hidden', !isCustomBrand);
+                            if (!isCustomBrand) brandCustom.value = '';
+                        }
+                        
+                        // Обновляем список моделей
+                        modelSelect.innerHTML = '<option value="">-- Выберите модель --</option>';
+                        
+                        if (brand && app.config.modelsDatabase[brand]) {
+                            app.config.modelsDatabase[brand].forEach(model => {
+                                const option = document.createElement('option');
+                                option.value = model;
+                                option.textContent = model;
+                                modelSelect.appendChild(option);
+                            });
+                        }
+                        
+                        // Добавляем опцию для кастомной модели
+                        const customOption = document.createElement('option');
+                        customOption.value = 'Другая модель';
+                        customOption.textContent = 'Другая модель';
+                        modelSelect.appendChild(customOption);
+                        
+                        app.updateProgress();
+                    });
+                    
+                    modelSelect.addEventListener('change', function() {
+                        const isCustomModel = this.value === 'Другая модель';
+                        const modelCustom = document.getElementById('model_custom');
+                        if (modelCustom) {
+                            modelCustom.classList.toggle('hidden', !isCustomModel);
+                            if (!isCustomModel) modelCustom.value = '';
+                        }
+                        app.updateProgress();
+                    });
+                }
+                
+                // Инициализация полей пробега
+                this.initMileageFields();
+                
+                // Обработчик для решения (показ/скрытие полей проверки)
+                const decisionSelect = document.getElementById('decision');
+                const inspectionFields = document.getElementById('inspectionFields');
+                
+                if (decisionSelect && inspectionFields) {
+                    decisionSelect.addEventListener('change', function() {
+                        const showInspectionFields = this.value === '📅 Запланировать проверку';
+                        inspectionFields.classList.toggle('hidden', !showInspectionFields);
+                        
+                        if (showInspectionFields) {
+                            // Устанавливаем дату по умолчанию (завтра)
+                            const tomorrow = new Date();
+                            tomorrow.setDate(tomorrow.getDate() + 1);
+                            const dateInput = document.getElementById('inspection_date');
+                            if (dateInput) {
+                                dateInput.value = tomorrow.toISOString().split('T')[0];
+                            }
+                            
+                            // Устанавливаем время по умолчанию
+                            const timeInput = document.getElementById('inspection_time');
+                            if (timeInput) {
+                                timeInput.value = '10:00';
+                            }
+                        }
+                    });
+                }
+                
+                // Обработчики для кнопок формы
+                const generateBtn = document.getElementById('generateBtn');
+                const saveToDbBtn = document.getElementById('saveToDbBtn');
+                const clearFormBtn = document.getElementById('clearFormBtn');
+                const copyBtn = document.getElementById('copyBtn');
+                
+                if (generateBtn) generateBtn.addEventListener('click', () => this.generateReport());
+                if (saveToDbBtn) saveToDbBtn.addEventListener('click', () => this.saveReportToDatabase());
+                if (clearFormBtn) clearFormBtn.addEventListener('click', () => this.clearForm());
+                if (copyBtn) copyBtn.addEventListener('click', () => this.copyToClipboard());
+                
+                // Автосохранение формы
+                this.setupAutoSave();
+                
+                // Загрузка сохраненных данных формы
+                this.loadFormData();
+                
+                // Обновление прогресса
+                this.updateProgress();
+            },
+            
+            initScrollToTop() {
+                const btn = document.getElementById('scrollToTopBtn');
+                if (!btn) return;
+                
+                window.addEventListener('scroll', () => {
+                    btn.classList.toggle('visible', window.pageYOffset > 300);
+                });
+                
+                btn.addEventListener('click', () => {
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                });
+            },
+            
+            initModal() {
+                const modal = document.getElementById('reportModal');
+                const modalClose = document.getElementById('modalClose');
+                const closeModalBtn = document.getElementById('closeModal');
+                const copyModalReportBtn = document.getElementById('copyModalReport');
+                
+                if (modalClose) {
+                    modalClose.addEventListener('click', () => {
+                        modal.classList.add('hidden');
+                    });
+                }
+                
+                if (closeModalBtn) {
+                    closeModalBtn.addEventListener('click', () => {
+                        modal.classList.add('hidden');
+                    });
+                }
+                
+                if (copyModalReportBtn) {
+                    copyModalReportBtn.addEventListener('click', () => {
+                        this.copyModalReport();
+                    });
+                }
+                
+                // Закрытие модалки по клику вне контента
+                if (modal) {
+                    modal.addEventListener('click', (e) => {
+                        if (e.target === modal) {
+                            modal.classList.add('hidden');
+                        }
+                    });
+                }
+                
+                // Инициализация модального окна подтверждения
+                this.initConfirmModal();
+            },
+            
+            initConfirmModal() {
+                const modal = document.getElementById('confirmModal');
+                const modalClose = document.getElementById('confirmModalClose');
+                const confirmAction = document.getElementById('confirmAction');
+                const cancelAction = document.getElementById('cancelAction');
+                
+                if (modalClose) {
+                    modalClose.addEventListener('click', () => {
+                        modal.classList.add('hidden');
+                        this.state.confirmCallback = null;
+                    });
+                }
+                
+                if (confirmAction) {
+                    confirmAction.addEventListener('click', () => {
+                        if (this.state.confirmCallback) {
+                            this.state.confirmCallback();
+                        }
+                        modal.classList.add('hidden');
+                        this.state.confirmCallback = null;
+                    });
+                }
+                
+                if (cancelAction) {
+                    cancelAction.addEventListener('click', () => {
+                        modal.classList.add('hidden');
+                        this.state.confirmCallback = null;
+                    });
+                }
+                
+                // Закрытие модалки по клику вне контента
+                if (modal) {
+                    modal.addEventListener('click', (e) => {
+                        if (e.target === modal) {
+                            modal.classList.add('hidden');
+                            this.state.confirmCallback = null;
+                        }
+                    });
+                }
+            },
+            
+            showConfirm(message, callback) {
+                const modal = document.getElementById('confirmModal');
+                const confirmMessage = document.getElementById('confirmMessage');
+                
+                if (!modal || !confirmMessage) return;
+                
+                confirmMessage.textContent = message;
+                this.state.confirmCallback = callback;
+                modal.classList.remove('hidden');
+            },
+            
+            initTooltips() {
+                let activeTooltip = null;
+                
+                function showTooltip(element, text) {
+                    // Удаляем существующую подсказку
+                    if (activeTooltip) {
+                        activeTooltip.remove();
+                        activeTooltip = null;
+                    }
+                    
+                    // Создаем новую подсказку
+                    const tooltip = document.createElement('div');
+                    tooltip.className = 'tooltip';
+                    tooltip.textContent = text;
+                    
+                    // Позиционируем подсказку
+                    const rect = element.getBoundingClientRect();
+                    tooltip.style.position = 'fixed';
+                    tooltip.style.top = (rect.bottom + window.scrollY + 5) + 'px';
+                    tooltip.style.left = (rect.left + window.scrollX) + 'px';
+                    tooltip.style.zIndex = '10000';
+                    
+                    document.body.appendChild(tooltip);
+                    activeTooltip = tooltip;
+                    
+                    //
