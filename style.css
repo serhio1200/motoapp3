@@ -744,22 +744,30 @@ input:invalid, select:invalid {
 .client-photos-upload.dragover {
     border-color: var(--primary-color);
     background: rgba(99, 102, 241, 0.1);
+    transform: scale(1.02);
 }
 
 .upload-icon {
     font-size: 3rem;
     margin-bottom: 16px;
     opacity: 0.7;
+    transition: all 0.3s ease;
+}
+
+.client-photos-upload.dragover .upload-icon {
+    transform: scale(1.1);
 }
 
 .upload-text {
     color: var(--text-light);
     margin-bottom: 8px;
+    font-weight: 600;
 }
 
 .upload-hint {
     font-size: 0.8rem;
     color: var(--text-light);
+    margin-bottom: 4px;
 }
 
 /* Превью файлов */
@@ -873,125 +881,6 @@ input:invalid, select:invalid {
     grid-template-columns: 1fr 1fr;
     gap: 16px;
     margin-bottom: 20px;
-}
-
-@media (max-width: 768px) {
-    .client-info-grid {
-        grid-template-columns: 1fr;
-    }
-    
-    .photos-preview {
-        grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-    }
-}
-
-/* Стили для PDF отчета */
-.pdf-preview {
-    background: white;
-    border: 1px solid var(--border-color);
-    border-radius: 8px;
-    padding: 20px;
-    margin: 20px 0;
-    max-height: 500px;
-    overflow-y: auto;
-}
-
-.pdf-section {
-    margin-bottom: 24px;
-}
-
-.pdf-header {
-    text-align: center;
-    margin-bottom: 30px;
-    padding-bottom: 20px;
-    border-bottom: 2px solid var(--primary-color);
-}
-
-.pdf-contact-info {
-    background: #f8f9fa;
-    padding: 15px;
-    border-radius: 6px;
-    margin: 20px 0;
-    text-align: center;
-}
-
-.pdf-section-title {
-    color: var(--primary-color);
-    border-bottom: 1px solid var(--border-color);
-    padding-bottom: 8px;
-    margin-bottom: 16px;
-    font-size: 1.2em;
-}
-
-.pdf-info-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 12px;
-    margin: 12px 0;
-}
-
-.pdf-verdict {
-    background: #e8f5e8;
-    padding: 16px;
-    border-radius: 6px;
-    border-left: 4px solid var(--success-color);
-    margin: 16px 0;
-}
-
-.pdf-photo-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 8px;
-    margin: 16px 0;
-}
-
-.pdf-photo-item img {
-    width: 100%;
-    height: 120px;
-    object-fit: cover;
-    border-radius: 4px;
-    border: 1px solid #ddd;
-}
-
-.pdf-footer {
-    text-align: center;
-    margin-top: 30px;
-    padding-top: 20px;
-    border-top: 1px solid var(--border-color);
-    color: var(--text-light);
-    font-size: 0.9em;
-}
-
-/* Анимации для загрузки файлов */
-@keyframes fileupload {
-    0% { transform: scale(1); }
-    50% { transform: scale(1.05); }
-    100% { transform: scale(1); }
-}
-
-.file-uploading {
-    animation: fileupload 2s infinite;
-}
-
-/* Статус загрузки */
-.upload-status {
-    padding: 8px 12px;
-    border-radius: 6px;
-    font-size: 0.8rem;
-    margin-top: 8px;
-    display: none;
-}
-
-.upload-status.success {
-    background: rgba(16, 185, 129, 0.1);
-    color: var(--success-color);
-    display: block;
-}
-
-.upload-status.error {
-    background: rgba(239, 68, 68, 0.1);
-    color: var(--danger-color);
-    display: block;
 }
 
 /* Улучшенные стили для загрузки 100 фото */
@@ -1127,33 +1016,6 @@ input:invalid, select:invalid {
     font-size: 0.7rem;
 }
 
-/* Адаптивность для большого количества фото */
-@media (max-width: 768px) {
-    .photos-preview {
-        grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
-        gap: 8px;
-    }
-    
-    .all-photos-grid {
-        grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-        gap: 10px;
-    }
-    
-    .all-photo-item img {
-        height: 80px;
-    }
-}
-
-@media (max-width: 480px) {
-    .photos-preview {
-        grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
-    }
-    
-    .all-photos-grid {
-        grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
-    }
-}
-
 /* Анимации для drag & drop */
 .client-photos-upload.dragover {
     border-color: var(--primary-color);
@@ -1195,118 +1057,149 @@ input:invalid, select:invalid {
     100% { transform: rotate(360deg); }
 }
 
-/* Стили для секций автокода и аукционных листов */
-.autocode-upload {
-    border-color: #10B981;
-    background: rgba(16, 185, 129, 0.05);
-}
-
-.autocode-upload:hover {
-    border-color: #059669;
-    background: rgba(16, 185, 129, 0.1);
-}
-
-.auction-upload {
-    border-color: #F59E0B;
-    background: rgba(245, 158, 11, 0.05);
-}
-
-.auction-upload:hover {
-    border-color: #D97706;
-    background: rgba(245, 158, 11, 0.1);
-}
-
-/* Стили для превью разных типов фото */
-.photo-preview-item.autocode {
-    border: 2px solid #10B981;
-}
-
-.photo-preview-item.auction {
-    border: 2px solid #F59E0B;
-}
-
-.photo-badge {
-    position: absolute;
-    top: 5px;
-    left: 5px;
-    background: var(--primary-color);
-    color: white;
-    padding: 2px 6px;
-    border-radius: 10px;
-    font-size: 0.6rem;
-    font-weight: 600;
-    z-index: 2;
-}
-
-.photo-badge.autocode {
-    background: #10B981;
-}
-
-.photo-badge.auction {
-    background: #F59E0B;
-}
-
-/* Стили для PDF секций */
-.pdf-autocode-section {
-    background: #f0fdf4;
-    border-left: 4px solid #10B981;
-    padding: 15px;
-    margin: 20px 0;
-    border-radius: 8px;
-}
-
-.pdf-auction-section {
-    background: #fffbeb;
-    border-left: 4px solid #F59E0B;
-    padding: 15px;
-    margin: 20px 0;
-    border-radius: 8px;
-}
-
-.pdf-section-header {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-bottom: 15px;
-    font-size: 1.1em;
-    font-weight: 600;
-}
-
-.pdf-section-header.autocode {
-    color: #059669;
-}
-
-.pdf-section-header.auction {
-    color: #D97706;
-}
-
-/* Стили для контактной информации в PDF */
-.pdf-contact-details {
-    background: #f8fafc;
-    padding: 15px;
-    border-radius: 8px;
-    margin: 20px 0;
-    border-left: 4px solid var(--primary-color);
-}
-
-.pdf-contact-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 15px;
-    margin-top: 10px;
-}
-
-.pdf-contact-item {
-    padding: 8px 0;
-    border-bottom: 1px solid #e5e7eb;
-}
-
-.pdf-contact-item:last-child {
-    border-bottom: none;
-}
-
+/* Адаптивность для большого количества фото */
 @media (max-width: 768px) {
-    .pdf-contact-grid {
+    .client-info-grid {
         grid-template-columns: 1fr;
     }
+    
+    .photos-preview {
+        grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+        gap: 8px;
+    }
+    
+    .all-photos-grid {
+        grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+        gap: 10px;
+    }
+    
+    .all-photo-item img {
+        height: 80px;
+    }
+}
+
+@media (max-width: 480px) {
+    .photos-preview {
+        grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+    }
+    
+    .all-photos-grid {
+        grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+    }
+}
+
+/* Стили для PDF отчета */
+.pdf-preview {
+    background: white;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 20px;
+    margin: 20px 0;
+    max-height: 500px;
+    overflow-y: auto;
+}
+
+.pdf-section {
+    margin-bottom: 24px;
+}
+
+.pdf-header {
+    text-align: center;
+    margin-bottom: 30px;
+    padding-bottom: 20px;
+    border-bottom: 2px solid var(--primary-color);
+}
+
+.pdf-contact-info {
+    background: #f8f9fa;
+    padding: 15px;
+    border-radius: 6px;
+    margin: 20px 0;
+    text-align: center;
+}
+
+.pdf-section-title {
+    color: var(--primary-color);
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 8px;
+    margin-bottom: 16px;
+    font-size: 1.2em;
+}
+
+.pdf-info-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin: 12px 0;
+}
+
+.pdf-verdict {
+    background: #e8f5e8;
+    padding: 16px;
+    border-radius: 6px;
+    border-left: 4px solid var(--success-color);
+    margin: 16px 0;
+}
+
+.pdf-photo-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+    margin: 16px 0;
+}
+
+.pdf-photo-item img {
+    width: 100%;
+    height: 120px;
+    object-fit: cover;
+    border-radius: 4px;
+    border: 1px solid #ddd;
+}
+
+.pdf-footer {
+    text-align: center;
+    margin-top: 30px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border-color);
+    color: var(--text-light);
+    font-size: 0.9em;
+}
+
+.photos-count {
+    text-align: center;
+    font-style: italic;
+    color: #6B7280;
+    margin: 10px 0;
+}
+
+/* Анимации для загрузки файлов */
+@keyframes fileupload {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+}
+
+.file-uploading {
+    animation: fileupload 2s infinite;
+}
+
+/* Статус загрузки */
+.upload-status {
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    margin-top: 8px;
+    display: none;
+}
+
+.upload-status.success {
+    background: rgba(16, 185, 129, 0.1);
+    color: var(--success-color);
+    display: block;
+}
+
+.upload-status.error {
+    background: rgba(239, 68, 68, 0.1);
+    color: var(--danger-color);
+    display: block;
 }
